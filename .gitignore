@@ -1,0 +1,117 @@
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+.env
+.env.bak
+.venv.bak/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+.settings/
+.project
+.pydevproject
+.classpath
+
+# Testing
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+htmlcov/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# Backup files
+*.bak
+*.swp
+*.swo
+*~
+
+# Project specific
+data/raw/
+data/processed/
+models/
+outputs/
+results/
+temp/
+*.pkl
+*.h5
+*.model
+*.joblib
+
+# Documentation
+docs/_build/
+docs/api/_build/
+site/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# System Files
+.DS_Store
+Thumbs.db
+desktop.ini
