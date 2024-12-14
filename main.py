@@ -1,47 +1,41 @@
-# Updated main.py
+# main.py (updated)
+
 import os
 from dotenv import load_dotenv
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from src.bot.keyboards.reply_keyboards import get_main_keyboard, get_analysis_keyboard, get_learn_keyboard
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler
+from src.bot.handlers.analysis_handlers import AnalysisHandlers
 
 load_dotenv()
 
-async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update, context):
     await update.message.reply_text(
-        "Welcome to Smart Crypto Analyzer Bot! 🚀\n\n"
-        "I'm here to help you with cryptocurrency analysis and education.\n\n"
-        "Use the keyboard below to navigate through features:",
-        reply_markup=get_main_keyboard()
+        "Welcome to Crypto Analysis Bot! 🚀\n\n"
+        "Use /analyze <symbol> to get quick analysis\n"
+        "Example: /analyze btc"
     )
 
-async def message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
-
-    if text == '📊 Analysis':
-        await update.message.reply_text(
-            "Choose analysis type:",
-            reply_markup=get_analysis_keyboard()
-        )
-    elif text == '📚 Learn':
-        await update.message.reply_text(
-            "What would you like to learn about?",
-            reply_markup=get_learn_keyboard()
-        )
-    elif text == '↩️ Back':
-        await update.message.reply_text(
-            "Main menu:",
-            reply_markup=get_main_keyboard()
-        )
-    # Add more handlers for other buttons
+async def handle_callback(update, context):
+    """Handle callback queries from inline buttons"""
+    query = update.callback_query
+    await query.answer()
+    
+    if query.data.startswith('detailed_'):
+        coin_id = query.data.split('_')[1]
+        await query.message.reply_text(f"Detailed analysis for {coin_id} coming soon!")
 
 def main():
+    # Create application
     application = Application.builder().token(os.getenv('TELEGRAM_BOT_TOKEN')).build()
-
+    
+    # Initialize handlers
+    analysis_handlers = AnalysisHandlers()
+    
     # Add handlers
-    application.add_handler(CommandHandler('start', start_command))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, message_handler))
-
+    application.add_handler(CommandHandler('start', start))
+    application.add_handler(CommandHandler('analyze', analysis_handlers.quick_analysis))
+    application.add_handler(CallbackQueryHandler(handle_callback))
+    
+    # Start bot
     print('Starting bot...')
     application.run_polling()
 
