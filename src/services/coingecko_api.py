@@ -22,7 +22,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
     def get_simple_price(self, ids, vs_currencies, include_market_cap=False, include_24hr_vol=False, 
-                     include_24hr_change=False, include_last_updated_at=False, precision=None, api_key=None):
+                     include_24hr_change=False, include_last_updated_at=False, precision=None, api_key=API_KEY):
   
         # Makes a GET request to the /simple/price endpoint.
 
@@ -61,7 +61,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
     def get_token_price(self, id, contract_addresses, vs_currencies, include_market_cap=False, 
-                        include_24hr_vol=False, include_24hr_change=False, include_last_updated_at=False, precision=None, api_key=None):
+                        include_24hr_vol=False, include_24hr_change=False, include_last_updated_at=False, precision=None, api_key=API_KEY):
         endpoint = f"{self.base_url}/simple/token_price/{id}"
         headers = self.headers.copy()
         if api_key:
@@ -82,7 +82,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_supported_vs_currencies(self, api_key=None):
+    def get_supported_vs_currencies(self, api_key=API_KEY):
         endpoint = f"{self.base_url}/simple/supported_vs_currencies"
         headers = self.headers.copy()
         if api_key:
@@ -94,7 +94,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_coins_list(self, include_platform=False, api_key=None):
+    def get_coins_list(self, include_platform=False, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/list"
         headers = self.headers.copy()
         if api_key:
@@ -109,7 +109,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
         
     def get_coins_markets(self, vs_currency, ids=None, category=None, order="market_cap_desc", per_page=100, 
-                        page=1, sparkline=False, price_change_percentage=None, locale="en", precision=None, api_key=None):
+                        page=1, sparkline=False, price_change_percentage=None, locale="en", precision=None, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/markets"
         headers = self.headers.copy()
         if api_key:
@@ -134,7 +134,7 @@ class CoinGeckoAPI:
 
 
     def get_coin_details(self, id, localization=True, tickers=True, market_data=True, community_data=True, 
-                        developer_data=True, sparkline=False, api_key=None):
+                        developer_data=True, sparkline=False, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/{id}"
         headers = self.headers.copy()
         if api_key:
@@ -155,7 +155,7 @@ class CoinGeckoAPI:
 
 
     def get_coin_tickers(self, id, exchange_ids=None, include_exchange_logo=False, page=1, order="trust_score_desc", 
-                        depth=False, api_key=None):
+                        depth=False, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/{id}/tickers"
         headers = self.headers.copy()
         if api_key:
@@ -174,7 +174,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_coin_history(self, id, date, localization=True, api_key=None):
+    def get_coin_history(self, id, date, localization=True, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/{id}/history"
         headers = self.headers.copy()
         if api_key:
@@ -190,7 +190,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_coin_market_chart(self, id, vs_currency, days, interval=None, precision=None, api_key=None):
+    def get_coin_market_chart(self, id, vs_currency, days, interval=None, precision=None, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/{id}/market_chart"
         headers = self.headers.copy()
         if api_key:
@@ -208,7 +208,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_coin_ohlc(self, id, vs_currency, days, precision=None, api_key=None):
+    def get_coin_ohlc(self, id, vs_currency, days, precision=None, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/{id}/ohlc"
         headers = self.headers.copy()
         if api_key:
@@ -224,7 +224,7 @@ class CoinGeckoAPI:
         else:
             response.raise_for_status()
 
-    def get_asset_platforms(self, filter=None, api_key=None):
+    def get_asset_platforms(self, filter=None, api_key=API_KEY):
         endpoint = f"{self.base_url}/asset_platforms"
         headers = self.headers.copy()
         if api_key:
@@ -239,7 +239,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_categories_list(self, api_key=None):
+    def get_categories_list(self, api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/categories/list"
         headers = self.headers.copy()
         if api_key:
@@ -251,7 +251,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_categories(self, order="market_cap_desc", api_key=None):
+    def get_categories(self, order="market_cap_desc", api_key=API_KEY):
         endpoint = f"{self.base_url}/coins/categories"
         headers = self.headers.copy()
         if api_key:
@@ -266,7 +266,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_exchanges(self, per_page=100, page=1, api_key=None):
+    def get_exchanges(self, per_page=100, page=1, api_key=API_KEY):
         endpoint = f"{self.base_url}/exchanges"
         headers = self.headers.copy()
         if api_key:
@@ -282,7 +282,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_exchange_details(self, id, api_key=None):
+    def get_exchange_details(self, id, api_key=API_KEY):
         endpoint = f"{self.base_url}/exchanges/{id}"
         headers = self.headers.copy()
         if api_key:
@@ -294,7 +294,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_exchange_tickers(self, id, coin_ids=None, include_exchange_logo=False, page=1, depth=False, order="trust_score_desc", api_key=None):
+    def get_exchange_tickers(self, id, coin_ids=None, include_exchange_logo=False, page=1, depth=False, order="trust_score_desc", api_key=API_KEY):
         endpoint = f"{self.base_url}/exchanges/{id}/tickers"
         headers = self.headers.copy()
         if api_key:
@@ -313,7 +313,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_global(self, api_key=None):
+    def get_global(self, api_key=API_KEY):
         endpoint = f"{self.base_url}/global"
         headers = self.headers.copy()
         if api_key:
@@ -325,7 +325,7 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-    def get_global_defi(self, api_key=None):
+    def get_global_defi(self, api_key=API_KEY):
         endpoint = f"{self.base_url}/global/decentralized_finance_defi"
         headers = self.headers.copy()
         if api_key:
@@ -337,114 +337,114 @@ class CoinGeckoAPI:
             response.raise_for_status()
 
 
-def get_exchange_volume_chart(self, id, days, api_key=None):
-    endpoint = f"{self.base_url}/exchanges/{id}/volume_chart"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    params = {
-        "days": days
-    }
-    response = requests.get(endpoint, headers=headers, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_exchange_volume_chart(self, id, days, api_key=API_KEY):
+        endpoint = f"{self.base_url}/exchanges/{id}/volume_chart"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        params = {
+            "days": days
+        }
+        response = requests.get(endpoint, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def get_derivatives(self, api_key=None):
-    endpoint = f"{self.base_url}/derivatives"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    response = requests.get(endpoint, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_derivatives(self, api_key=API_KEY):
+        endpoint = f"{self.base_url}/derivatives"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        response = requests.get(endpoint, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def get_derivative_exchanges(self, order="open_interest_btc_desc", per_page=100, page=1, api_key=None):
-    endpoint = f"{self.base_url}/derivatives/exchanges"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    params = {
-        "order": order,
-        "per_page": per_page,
-        "page": page
-    }
-    response = requests.get(endpoint, headers=headers, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_derivative_exchanges(self, order="open_interest_btc_desc", per_page=100, page=1, api_key=API_KEY):
+        endpoint = f"{self.base_url}/derivatives/exchanges"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        params = {
+            "order": order,
+            "per_page": per_page,
+            "page": page
+        }
+        response = requests.get(endpoint, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def get_derivative_exchange_details(self, id, include_tickers=None, api_key=None):
-    endpoint = f"{self.base_url}/derivatives/exchanges/{id}"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    params = {
-        "include_tickers": include_tickers
-    }
-    response = requests.get(endpoint, headers=headers, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_derivative_exchange_details(self, id, include_tickers=None, api_key=API_KEY):
+        endpoint = f"{self.base_url}/derivatives/exchanges/{id}"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        params = {
+            "include_tickers": include_tickers
+        }
+        response = requests.get(endpoint, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def get_derivative_exchanges_list(self, api_key=None):
-    endpoint = f"{self.base_url}/derivatives/exchanges/list"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    response = requests.get(endpoint, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_derivative_exchanges_list(self, api_key=API_KEY):
+        endpoint = f"{self.base_url}/derivatives/exchanges/list"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        response = requests.get(endpoint, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def get_exchange_rates(self, api_key=None):
-    endpoint = f"{self.base_url}/exchange_rates"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    response = requests.get(endpoint, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_exchange_rates(self, api_key=API_KEY):
+        endpoint = f"{self.base_url}/exchange_rates"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        response = requests.get(endpoint, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def search(self, query, api_key=None):
-    endpoint = f"{self.base_url}/search"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    params = {
-        "query": query
-    }
-    response = requests.get(endpoint, headers=headers, params=params)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def search(self, query, api_key=API_KEY):
+        endpoint = f"{self.base_url}/search"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        params = {
+            "query": query
+        }
+        response = requests.get(endpoint, headers=headers, params=params)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
-def get_trending(self, api_key=None):
-    endpoint = f"{self.base_url}/search/trending"
-    headers = self.headers.copy()
-    if api_key:
-        headers["x-cg-demo-api-key"] = api_key
-    response = requests.get(endpoint, headers=headers)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        response.raise_for_status()
+    def get_trending(self, api_key=API_KEY):
+        endpoint = f"{self.base_url}/search/trending"
+        headers = self.headers.copy()
+        if api_key:
+            headers["x-cg-demo-api-key"] = api_key
+        response = requests.get(endpoint, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            response.raise_for_status()
 
 
 # Usage Example
@@ -452,5 +452,5 @@ if __name__ == "__main__":
 
 
     api = CoinGeckoAPI()
-    result = api.get_simple_price('bitcoin')
+    result = api.get_trending()
     print(result)
