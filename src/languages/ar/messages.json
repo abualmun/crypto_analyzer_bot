@@ -1,1 +1,25 @@
-{}
+{
+    "error_analysis": "خطأ في التحليل",
+    "quick_analysis": "تحليل سريع",
+    "current_price": "السعر الحالي",
+    "price_change": "التغير خلال 24 ساعة",
+    "trend": "الاتجاه",
+    "detailed_analysis": "تحليل مفصل",
+    "change": "التغير",
+    "volume": "حجم التداول",
+    "trend_analysis": "تحليل الاتجاه",
+    "momentum_analysis": "تحليل الزخم",
+    "stochastic": "مؤشر ستوكاستيك",
+    "support_resistance": "الدعم والمقاومة",
+    "resistance": "المقاومة",
+    "support": "الدعم",
+    "patterns_detected": "الأنماط المكتشفة",
+    "summary": "الملخص",
+    "sentiment": "التوجه العام",
+    "confidence": "مستوى الثقة",
+    "signals": "الإشارات الرئيسية",
+    "overbought": "تشبع شراء",
+    "oversold": "تشبع بيع",
+    "error": "خطأ",
+    "analyzing": "جاري تحليل البيانات"
+}

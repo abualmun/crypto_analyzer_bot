@@ -1,103 +1,123 @@
-# src/bot/handlers/analysis_handlers.py
-
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update
 from telegram.ext import ContextTypes
-from src.data.crypto_data import CryptoDataClient
-from src.data.market_data import MarketDataProcessor
-from src.analysis.technical import TechnicalAnalyzer
+from ...analysis.technical import TechnicalAnalyzer
+from ...utils.formatters import TelegramFormatter
+from ...data.processor import DataProcessor
 
-class AnalysisHandlers:
+class AnalysisHandler:
     def __init__(self):
-        self.crypto_client = CryptoDataClient()
-        self.market_processor = MarketDataProcessor(self.crypto_client)
         self.analyzer = TechnicalAnalyzer()
+        self.formatter = TelegramFormatter()
+        self.data_processor = DataProcessor()
 
-    async def quick_analysis(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle quick analysis command"""
+    async def cmd_analyze(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler for /analyze command"""
+        if not context.args:
+            await update.message.reply_text(
+                "Please provide a cryptocurrency symbol.\n"
+                "Example: /analyze btc"
+            )
+            return
+
+        coin_id = context.args[0].lower()
+        
+        # Show loading message
+        loading_message = await update.message.reply_text(
+            self.formatter.format_loading_message()
+        )
+
+        # Validate coin
+        if not self.data_processor.validate_coin_id(coin_id):
+            await loading_message.edit_text(
+                f"❌ Invalid cryptocurrency symbol: {coin_id}\n"
+                "Please try again with a valid symbol."
+            )
+            return
+
         try:
-            # Get coin symbol from command
-            message = update.message.text.lower()
-            parts = message.split()
+            # Get full analysis
+            analysis = self.analyzer.analyze_coin(coin_id)
+            formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
             
-            if len(parts) < 2:
-                await update.message.reply_text(
-                    "Please provide a coin symbol. Example: /analyze btc"
-                )
-                return
-
-            coin_symbol = parts[1]
-            
-            # Show processing message
-            processing_message = await update.message.reply_text(
-                "🔄 Processing analysis... Please wait."
-            )
-
-            # Search for coin
-            coins = await self.crypto_client.search_coin(coin_symbol)
-            if not coins:
-                await processing_message.edit_text(
-                    "❌ Coin not found. Please check the symbol and try again."
-                )
-                return
-
-            coin_id = coins[0]['id']  # Use first match
-
-            # Get market data
-            ohlcv_data = await self.market_processor.get_ohlcv_data(coin_id, '30')
-            if ohlcv_data is None:
-                await processing_message.edit_text(
-                    "❌ Error fetching market data. Please try again later."
-                )
-                return
-
-            # Generate analysis
-            analysis = await self.analyzer.generate_analysis_report(ohlcv_data)
-            
-            # Format report
-            report = self._format_analysis_report(coin_symbol.upper(), analysis)
-            
-            # Create keyboard for detailed analysis
-            keyboard = [[
-                InlineKeyboardButton("📊 Detailed Analysis", callback_data=f"detailed_{coin_id}")
-            ]]
-
-            await processing_message.edit_text(
-                report,
-                reply_markup=InlineKeyboardMarkup(keyboard),
-                parse_mode='HTML'
-            )
+            # Update loading message with analysis
+            await loading_message.edit_text(formatted_message)
 
         except Exception as e:
-            await update.message.reply_text(
-                f"❌ An error occurred: {str(e)}"
+            await loading_message.edit_text(
+                self.formatter.format_error_message(str(e))
             )
 
-    def _format_analysis_report(self, symbol: str, analysis: dict) -> str:
-        """Format analysis results into readable message"""
-        trend = analysis['trend']
-        momentum = analysis['momentum']
-        volatility = analysis['volatility']
-        sr = analysis['support_resistance']
+    async def cmd_quick(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler for /quick command"""
+        if not context.args:
+            await update.message.reply_text(
+                "Please provide a cryptocurrency symbol.\n"
+                "Example: /quick btc"
+            )
+            return
 
-        report = f"""
-<b>📊 Analysis Report for {symbol}</b>
+        coin_id = context.args[0].lower()
+        
+        # Show loading message
+        loading_message = await update.message.reply_text(
+            self.formatter.format_loading_message()
+        )
 
-<b>🎯 Overall Trend:</b> {trend['trend']}
-• SMA20: {trend['price_vs_sma20']} from price
-• SMA50: {trend['price_vs_sma50']} from price
+        try:
+            # Get quick analysis
+            analysis = self.analyzer.get_quick_analysis(coin_id)
+            formatted_message = self.formatter.format_quick_analysis(analysis, coin_id)
+            
+            # Update loading message with analysis
+            await loading_message.edit_text(formatted_message)
 
-<b>📈 Momentum:</b> {momentum['momentum']}
-• RSI: {momentum['rsi']:.2f}
-• MACD: {momentum['macd']:.2f}
+        except Exception as e:
+            await loading_message.edit_text(
+                self.formatter.format_error_message(str(e))
+            )
 
-<b>📊 Volatility:</b> {volatility['volatility']}
-• ATR: {volatility['atr']:.2f}
+    async def handle_text_analysis(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler for natural language analysis requests"""
+        text = update.message.text.lower()
+        
+        # Extract coin from text (simple implementation)
+        common_coins = {
+            "bitcoin": "bitcoin",
+            "btc": "bitcoin",
+            "ethereum": "ethereum",
+            "eth": "ethereum",
+            # Add more common coins
+        }
+        
+        found_coin = None
+        for key, value in common_coins.items():
+            if key in text:
+                found_coin = value
+                break
+                
+        if not found_coin:
+            await update.message.reply_text(
+                "I couldn't identify which cryptocurrency you want to analyze.\n"
+                "Try using /analyze btc or /quick eth instead."
+            )
+            return
+            
+        # Show loading message
+        loading_message = await update.message.reply_text(
+            self.formatter.format_loading_message()
+        )
 
-<b>🔍 Key Levels:</b>
-• Support: {sr['price_to_support']} below price
-• Resistance: {sr['price_to_resistance']} above price
+        try:
+            if "quick" in text or "fast" in text:
+                analysis = self.analyzer.get_quick_analysis(found_coin)
+                formatted_message = self.formatter.format_quick_analysis(analysis, found_coin)
+            else:
+                analysis = self.analyzer.analyze_coin(found_coin)
+                formatted_message = self.formatter.format_full_analysis(analysis, found_coin)
+            
+            await loading_message.edit_text(formatted_message)
 
-<i>Analysis timestamp: {analysis['timestamp']}</i>
-"""
-        return report
-
+        except Exception as e:
+            await loading_message.edit_text(
+                self.formatter.format_error_message(str(e))
+            )

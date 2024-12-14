@@ -1,1 +1,25 @@
-{}
+{
+    "error_analysis": "Analysis Error",
+    "quick_analysis": "Quick Analysis",
+    "current_price": "Current Price",
+    "price_change": "24h Change",
+    "trend": "Trend",
+    "detailed_analysis": "Detailed Analysis",
+    "change": "Change",
+    "volume": "Volume",
+    "trend_analysis": "Trend Analysis",
+    "momentum_analysis": "Momentum Analysis",
+    "stochastic": "Stochastic",
+    "support_resistance": "Support & Resistance",
+    "resistance": "Resistance",
+    "support": "Support",
+    "patterns_detected": "Patterns Detected",
+    "summary": "Summary",
+    "sentiment": "Overall Sentiment",
+    "confidence": "Confidence Level",
+    "signals": "Key Signals",
+    "overbought": "Overbought",
+    "oversold": "Oversold",
+    "error": "Error",
+    "analyzing": "Analyzing cryptocurrency data"
+}
