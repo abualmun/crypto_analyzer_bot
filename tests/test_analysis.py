@@ -16,7 +16,7 @@ analysis_result = analyzer.analyze_coin(coin_id, vs_currency, days)
 if "error" not in analysis_result:
     # Example 1: Plot price chart
     df = analyzer.data_processor.get_ohlcv_data(coin_id, vs_currency, days)
-    # plot_price_chart(df)
+    plot_price_chart(df)
 
     # Example 2: Plot moving averages
     trend_data = analysis_result['trend_indicators']
@@ -36,14 +36,14 @@ if "error" not in analysis_result:
     plot_rsi(rsi_data * len(df), df)  # Duplicate the RSI for consistent plotting
 
     # # Example 5: Plot volume
-    # plot_volume(df)
+    plot_volume(df)
 
     # # Example 6: Plot support and resistance levels
-    # support_resistance_data = analysis_result['support_resistance']
-    # plot_support_resistance(
-    #     df, 
-    #     support_resistance_data['support_levels'], 
-    #     support_resistance_data['resistance_levels']
-    # )
+    support_resistance_data = analysis_result['support_resistance']
+    plot_support_resistance(
+        df, 
+        support_resistance_data['support_levels'], 
+        support_resistance_data['resistance_levels']
+    )
 else:
     print("Error in analysis:", analysis_result["error"])
