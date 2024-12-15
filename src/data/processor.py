@@ -151,16 +151,33 @@ class DataProcessor:
             self.logger.error(f"Error fetching price for {coin_id}: {str(e)}")
             return None
 
-    def validate_coin_id(self, coin_id: str) -> bool:
-        """
-        Validate if a coin ID exists in CoinGecko.
-        """
-        try:
-            search_result = self.api.search(coin_id)
-            coins = search_result.get('coins', [])
-            return any(coin['id'] == coin_id for coin in coins)
-        except Exception:
-            return False
+    # src/data/processor.py
+
+def validate_coin_id(self, coin_id: str) -> bool:
+    """
+    Validate if a coin ID exists in CoinGecko.
+    Add common symbol mappings for better UX.
+    """
+    # Common symbol to id mappings
+    symbol_mapping = {
+        'btc': 'bitcoin',
+        'eth': 'ethereum',
+        'usdt': 'tether',
+        'bnb': 'binance-coin',
+        'xrp': 'ripple',
+        # Add more common mappings
+    }
+
+    # Convert common symbols to their IDs
+    coin_id = symbol_mapping.get(coin_id.lower(), coin_id.lower())
+
+    try:
+        search_result = self.api.search(coin_id)
+        coins = search_result.get('coins', [])
+        return any(coin['id'] == coin_id for coin in coins)
+    except Exception as e:
+        print(f"Validation error: {str(e)}")
+        return False
 
     def get_available_coins(self) -> List[Dict]:
         """
