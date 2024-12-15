@@ -40,6 +40,9 @@ if "error" not in analysis_result:
     support_levels=[100, 105],  # Example support levels
     resistance_levels=[110, 115],  # Example resistance levels
     style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'),  # Custom style
+    charts_to_include=['price', 'rsi', 'macd'],
+    # labels are connected with charts_to_include respectively
+    labels=['This is the Price Chart', 'RSI Analysis: Overbought and Oversold Zones', 'MACD: Momentum Analysis']
 )
 
 else:
