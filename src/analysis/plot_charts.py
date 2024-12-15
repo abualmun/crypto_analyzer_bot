@@ -32,7 +32,7 @@ def create_plot_style(grid=True, volume=True, color_up='green', color_down='red'
     )
 
 def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None, support_levels=None, resistance_levels=None, style=None, charts_to_include=None, labels=None):
-    """Save selected charts into a single PDF with optional labels above each chart."""
+    """Save selected charts into a single PDF with optional labels and legends."""
     validate_dataframe(df)
     style = style or create_plot_style()
     charts_to_include = charts_to_include or ["price", "moving_averages", "macd", "rsi", "volume", "support_resistance"]
@@ -48,6 +48,7 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 fig, ax = mpf.plot(df, type='candle', title='Price Chart (OHLC)', ylabel='Price', style=style, returnfig=True)
                 if label:
                     fig.suptitle(label, fontsize=12, fontweight='bold', y=0.98)
+                ax[0].legend(["Candlestick: OHLC prices"], loc="upper left")
                 pdf.savefig(fig)
                 plt.close(fig)
 
@@ -61,6 +62,7 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 fig, ax = mpf.plot(df, type='candle', addplot=additional_plots, title='Moving Averages', ylabel='Price', style=style, returnfig=True)
                 if label:
                     fig.suptitle(label, fontsize=12, fontweight='bold', y=0.98)
+                ax.legend(["Green: 20-Day MA", "Orange: 50-Day MA"], loc="upper left")
                 pdf.savefig(fig)
                 plt.close(fig)
 
@@ -74,6 +76,7 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 fig, ax = mpf.plot(df, type='candle', addplot=additional_plots, title='MACD (Moving Average Convergence Divergence)', style=style, returnfig=True)
                 if label:
                     fig.suptitle(label, fontsize=12, fontweight='bold', y=0.98)
+                ax[0].legend(["Blue: MACD Line", "Red: Signal Line", "Gray: Histogram"], loc="upper left")
                 pdf.savefig(fig)
                 plt.close(fig)
 
@@ -87,6 +90,8 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 fig, ax = mpf.plot(df, type='candle', addplot=additional_plots, title='Relative Strength Index (RSI)', style=style, panel_ratios=(2, 1), returnfig=True)
                 if label:
                     fig.suptitle(label, fontsize=12, fontweight='bold', y=0.98)
+                ax[1].legend(["Purple: RSI", "Red Dashed: Overbought (70)", "Green Dashed: Oversold (30)"], loc="upper left")
+                print(":::::::::::::::",len(ax))
                 pdf.savefig(fig)
                 plt.close(fig)
 
@@ -95,6 +100,8 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 fig, ax = mpf.plot(df, type='candle', volume=True, title='Trading Volume', ylabel='Price', ylabel_lower='Volume', style=style, returnfig=True)
                 if label:
                     fig.suptitle(label, fontsize=12, fontweight='bold', y=0.98)
+                ax[1].legend(["Candlestick: OHLC", "Bar: Volume"], loc="upper left")
+               
                 pdf.savefig(fig)
                 plt.close(fig)
 
@@ -107,6 +114,7 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 fig, ax = mpf.plot(df, type='candle', addplot=additional_plots, title='Support and Resistance Levels', ylabel='Price', style=style, returnfig=True)
                 if label:
                     fig.suptitle(label, fontsize=12, fontweight='bold', y=0.98)
+                ax[1].legend(["Green Dashed: Support Levels", "Red Dashed: Resistance Levels"], loc="upper left")
                 pdf.savefig(fig)
                 plt.close(fig)
 
