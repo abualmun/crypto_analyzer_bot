@@ -72,9 +72,9 @@ class TechnicalAnalyzer:
             "ma50": ma50[-1],
             "ma200": ma200[-1],
             "macd": {
-                "macd": macd[-1],
-                "signal": macd_signal[-1],
-                "histogram": macd_hist[-1]
+                "macd": macd,
+                "signal": macd_signal,
+                "histogram": macd_hist
             }
         }
 
@@ -94,7 +94,7 @@ class TechnicalAnalyzer:
         atr = talib.ATR(high, low, close)
         
         return {
-            "rsi": rsi[-1],
+            "rsi": rsi,
             "stochastic": {
                 "k": slowk[-1],
                 "d": slowd[-1]
@@ -178,15 +178,15 @@ class TechnicalAnalyzer:
             signals.append(("Bearish", "Overall trend is bearish"))
             
         # RSI analysis
-        if rsi > 70:
+        if rsi[-1] > 70:
             signals.append(("Bearish", "RSI indicates overbought conditions"))
-        elif rsi < 30:
+        elif rsi[-1] < 30:
             signals.append(("Bullish", "RSI indicates oversold conditions"))
             
         # MACD analysis
-        if macd['macd'] > macd['signal']:
+        if macd['macd'][-1] > macd['signal'][-1]:
             signals.append(("Bullish", "MACD is above signal line"))
-        elif macd['macd'] < macd['signal']:
+        elif macd['macd'][-1] < macd['signal'][-1]:
             signals.append(("Bearish", "MACD is below signal line"))
             
         # Volume analysis
@@ -223,7 +223,7 @@ class TechnicalAnalyzer:
         analysis = {
             "current_price": close[-1],
             "price_change": ((close[-1] - close[-2]) / close[-2]) * 100,
-            "rsi": talib.RSI(close)[-1],
+            "rsi": talib.RSI(close),
             "trend": "Bullish" if close[-1] > talib.SMA(close, 20)[-1] else "Bearish"
         }
         
