@@ -113,7 +113,8 @@ class TechnicalAnalyzer:
                 "rsi": {
                     "value": rsi[-1],
                     "signal": self._interpret_rsi(rsi[-1]),
-                    "previous": rsi[-2]
+                    "previous": rsi[-2],
+                    "all":rsi
                 },
                 "stochastic": {
                     "k": slowk[-1],
@@ -220,9 +221,9 @@ class TechnicalAnalyzer:
                     )
                 },
                 "macd": {
-                    "macd": float(macd[last_valid_index]),
-                    "signal": float(macd_signal[last_valid_index]),
-                    "histogram": float(macd_hist[last_valid_index]),
+                    "macd": macd,
+                    "signal": macd_signal,
+                    "histogram":macd_hist,
                     "interpretation": self._interpret_macd(
                         float(macd[last_valid_index]),
                         float(macd_signal[last_valid_index]),
