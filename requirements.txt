@@ -4,3 +4,4 @@ pycoingecko==3.1.0
 pandas==2.0.0
 numpy==1.23.0
 TA-Lib==0.4.24
+mplfinance

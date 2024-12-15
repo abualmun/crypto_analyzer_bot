@@ -22,6 +22,8 @@ class AnalysisSystemTester:
         self.test_formatting()
         self.test_error_handling()
         self.test_performance()
+        self.test_analysis_structure()
+        self.test_formatted_output()
 
     def test_data_fetching(self):
         """Test data fetching functionality"""
@@ -156,6 +158,21 @@ class AnalysisSystemTester:
         
         # Test network error handling
         # Add more error scenarios...
+        
+    # Add this to your test script
+    def test_analysis_structure(self):
+        """Test full analysis structure"""
+        print("\nTesting Full Analysis Structure:")
+        
+        for coin in self.test_coins:
+            print(f"\nAnalyzing {coin} full structure:")
+            try:
+                analysis = self.analyzer.analyze_coin(coin)
+                print("\nAnalysis Keys:", analysis.keys())
+                for key in analysis.keys():
+                    print(f"\n{key} type:", type(analysis[key]))
+            except Exception as e:
+                print(f"❌ Error analyzing structure: {str(e)}")
 
     def test_performance(self):
         """Test performance metrics"""
@@ -177,6 +194,20 @@ class AnalysisSystemTester:
                 print("⚠️ Warning: Analysis taking longer than expected")
             else:
                 print("✅ Performance within acceptable range")
+                
+    def test_formatted_output(self):
+        """Test actual formatted output"""
+        print("\nTesting Formatted Output:")
+        
+        for coin in self.test_coins:
+            print(f"\n{'-'*50}")
+            print(f"Formatted output for {coin}:")
+            try:
+                analysis = self.analyzer.analyze_coin(coin)
+                formatted = self.formatter.format_full_analysis(analysis, coin)
+                print(formatted)
+            except Exception as e:
+                print(f"Error formatting {coin}: {str(e)}")
 
 if __name__ == "__main__":
     tester = AnalysisSystemTester()
