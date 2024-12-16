@@ -14,6 +14,19 @@ class DataProcessor:
         self.cache_duration = 300  # Cache duration in seconds (5 minutes)
         self.logger = logging.getLogger(__name__)
 
+    # Common symbol to id mappings
+    symbol_mapping = {
+        'btc': 'bitcoin',
+        'eth': 'ethereum',
+        'usdt': 'tether',
+        'bnb': 'binance-coin',
+        'xrp': 'ripple',
+        # Add more common mappings
+    }
+
+
+
+
     def get_ohlcv_data(
         self, 
         coin_id: str, 
@@ -100,6 +113,7 @@ class DataProcessor:
         final_df = final_df[~final_df.index.duplicated(keep='first')]
 
         # Fill any missing values
+        print(final_df)
         final_df.fillna(method='ffill', inplace=True)
         
         return final_df
@@ -115,6 +129,7 @@ class DataProcessor:
         """
         results = {}
         for coin_id in coin_ids:
+            
             results[coin_id] = self.get_ohlcv_data(coin_id, vs_currency, days)
             time.sleep(1)  # Rate limiting
         return results
@@ -153,31 +168,24 @@ class DataProcessor:
 
     # src/data/processor.py
 
-def validate_coin_id(self, coin_id: str) -> bool:
-    """
-    Validate if a coin ID exists in CoinGecko.
-    Add common symbol mappings for better UX.
-    """
-    # Common symbol to id mappings
-    symbol_mapping = {
-        'btc': 'bitcoin',
-        'eth': 'ethereum',
-        'usdt': 'tether',
-        'bnb': 'binance-coin',
-        'xrp': 'ripple',
-        # Add more common mappings
-    }
+    def validate_coin_id(self, coin_id: str) -> bool:
+        """
+        Validate if a coin ID exists in CoinGecko.
+        Add common symbol mappings for better UX.
+        """
+        # Common symbol to id mappings
+        
 
-    # Convert common symbols to their IDs
-    coin_id = symbol_mapping.get(coin_id.lower(), coin_id.lower())
+        # Convert common symbols to their IDs
+        coin_id = DataProcessor.symbol_mapping.get(coin_id.lower(), coin_id.lower())
 
-    try:
-        search_result = self.api.search(coin_id)
-        coins = search_result.get('coins', [])
-        return any(coin['id'] == coin_id for coin in coins)
-    except Exception as e:
-        print(f"Validation error: {str(e)}")
-        return False
+        try:
+            search_result = self.api.search(coin_id)
+            coins = search_result.get('coins', [])
+            return any(coin['id'] == coin_id for coin in coins)
+        except Exception as e:
+            print(f"Validation error: {str(e)}")
+            return False
 
     def get_available_coins(self) -> List[Dict]:
         """

@@ -10,6 +10,7 @@ class TechnicalAnalyzer:
 
     def analyze_coin(self, coin_id: str, vs_currency: str = 'usd', days: int = 30) -> Dict:
         """Perform enhanced technical analysis"""
+        coin_id = DataProcessor.symbol_mapping[coin_id]
         df = self.data_processor.get_ohlcv_data(coin_id, vs_currency, days)
         if df is None:
             return {"error": "Failed to fetch data"}
@@ -210,14 +211,14 @@ class TechnicalAnalyzer:
 
             return {
                 "moving_averages": {
-                    "ma20": float(ma20[last_valid_index]),
-                    "ma50": float(ma50[last_valid_index]),
-                    "ema20": float(ema20[last_valid_index]),
+                    "ma20":ma20,
+                    "ma50":ma50,
+                    "ema20":ema20,
                     "signal": self._interpret_mas(
-                        float(close[last_valid_index]), 
-                        float(ma20[last_valid_index]), 
-                        float(ma50[last_valid_index]), 
-                        float(ma50[last_valid_index])  # Using MA50 as long-term reference
+                        close[last_valid_index], 
+                        ma20[last_valid_index], 
+                        ma50[last_valid_index], 
+                        ema20[last_valid_index]
                     )
                 },
                 "macd": {
@@ -372,7 +373,7 @@ class TechnicalAnalyzer:
 
     
 
-    def _interpret_mas(self, close: float, ma20: float, ma50: float, ma200: float) -> str:
+    def _interpret_mas(self, close: float, ma20, ma50, ma200) -> str:
         """Interpret Moving Averages"""
         if close > ma20 and ma20 > ma50 and ma50 > ma200:
             return "Bullish"
