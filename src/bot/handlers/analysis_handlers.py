@@ -4,12 +4,8 @@ from ...analysis.technical import TechnicalAnalyzer
 from ...utils.formatters import TelegramFormatter
 from ...data.processor import DataProcessor
 from ...analysis.plot_charts import (
-    plot_price_chart,
-    plot_moving_averages,
-    plot_macd,
-    plot_rsi,
-    plot_volume,
-    plot_support_resistance
+    create_plot_style,
+    save_charts_to_pdf
 )
 import tempfile
 import os
@@ -70,12 +66,20 @@ class AnalysisHandler:
             await loading_message.edit_text(formatted_message)
 
             # Generate and send charts
-            await self._send_analysis_charts(update, analysis, coin_id)
-
+            # await self._send_analysis_charts(update, analysis, coin_id,formatted_message)
+            await self._generate_and_send_chart( 
+        update=update, 
+        coin_id= coin_id, 
+        chart_type= 'full', 
+        days=days,
+        loading_message = update.message,
+        intro_text=formatted_message
+    )
         except Exception as e:
-            await loading_message.edit_text(
-                self.formatter.format_error_message(str(e))
-            )
+            print(str(e))
+            # await loading_message.edit_text(
+            #     self.formatter.format_error_message(str(e))
+            # )
 
     async def cmd_quick(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler for /quick command"""
@@ -110,8 +114,15 @@ class AnalysisHandler:
             await loading_message.edit_text(formatted_message)
 
             # Send basic price chart
-            await self._send_price_chart(update, analysis, coin_id)
-
+            # await self._send_price_chart(update, analysis, coin_id,formatted_message)
+            await self._generate_and_send_chart(
+        update= update, 
+        coin_id=coin_id, 
+        chart_type = 'price',
+        days=1, 
+        loading_message=update.message,
+        intro_text=formatted_message
+    )
         except Exception as e:
             await loading_message.edit_text(
                 self.formatter.format_error_message(str(e))
@@ -157,98 +168,53 @@ class AnalysisHandler:
                 self.formatter.format_error_message(str(e))
             )
 
-    async def _send_analysis_charts(self, update: Update, analysis: dict, coin_id: str):
-        """Generate and send multiple charts for full analysis"""
-        try:
-            df = self.data_processor.get_ohlcv_data(coin_id)
-            
-            # Generate charts in temp files
-            with tempfile.TemporaryDirectory() as temp_dir:
-                # Price and MA chart
-                ma_data = analysis['trend_indicators']['moving_averages']
-                ma_path = os.path.join(temp_dir, 'ma_chart.png')
-                plot_moving_averages(df, ma_data)
-                
-                # MACD chart
-                macd_data = analysis['trend_indicators']['macd']
-                macd_path = os.path.join(temp_dir, 'macd_chart.png')
-                plot_macd(macd_data, df)
-                
-                # RSI chart
-                rsi_data = analysis['momentum_indicators']['rsi']['value']
-                rsi_path = os.path.join(temp_dir, 'rsi_chart.png')
-                plot_rsi(rsi_data, df)
-
-                # Send charts
-                for chart_path in [ma_path, macd_path, rsi_path]:
-                    if os.path.exists(chart_path):
-                        await update.message.reply_photo(
-                            photo=open(chart_path, 'rb')
-                        )
-
-        except Exception as e:
-            await update.message.reply_text(
-                f"⚠️ Error generating charts: {str(e)}"
-            )
-
-    async def _send_price_chart(self, update: Update, analysis: dict, coin_id: str):
-        """Send basic price chart for quick analysis"""
-        try:
-            df = self.data_processor.get_ohlcv_data(coin_id)
-            
-            with tempfile.TemporaryDirectory() as temp_dir:
-                chart_path = os.path.join(temp_dir, 'price_chart.png')
-                plot_price_chart(df)
-                
-                if os.path.exists(chart_path):
-                    await update.message.reply_photo(
-                        photo=open(chart_path, 'rb')
-                    )
-
-        except Exception as e:
-            await update.message.reply_text(
-                f"⚠️ Error generating price chart: {str(e)}"
-            )
-
     async def _generate_and_send_chart(
         self, 
         update: Update, 
         coin_id: str, 
         chart_type: str, 
         days: int,
-        loading_message: Update.message
+        loading_message: Update.message,
+        intro_text = None
     ):
         """Generate and send specific chart type"""
+        # coin_id = DataProcessor.symbol_mapping[coin_id]
         try:
-            df = self.data_processor.get_ohlcv_data(coin_id, days=days)
+            df = self.data_processor.get_ohlcv_data(coin_id = DataProcessor.symbol_mapping[coin_id], days=days)
             analysis = self.analyzer.analyze_coin(coin_id, days=days)
 
             with tempfile.TemporaryDirectory() as temp_dir:
-                chart_path = os.path.join(temp_dir, f'{chart_type}_chart.png')
+                chart_path = os.path.join(temp_dir, f'{chart_type}_chart.pdf')
 
                 if chart_type == 'price':
-                    plot_price_chart(df)
+                    save_charts_to_pdf(filename=chart_path, df=df, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
                 elif chart_type == 'ma':
                     ma_data = analysis['trend_indicators']['moving_averages']
-                    plot_moving_averages(df, ma_data)
+                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
                 elif chart_type == 'macd':
                     macd_data = analysis['trend_indicators']['macd']
-                    plot_macd(macd_data, df)
+                    save_charts_to_pdf(filename=chart_path, df=df,macd_data=macd_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
                 elif chart_type == 'rsi':
-                    rsi_data = analysis['momentum_indicators']['rsi']['value']
-                    plot_rsi(rsi_data, df)
+                    rsi_data = analysis['momentum_indicators']['rsi']['all']
+                    save_charts_to_pdf(filename=chart_path, df=df,rsi_data=rsi_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
                 elif chart_type == 'volume':
-                    plot_volume(df)
+                    save_charts_to_pdf(filename=chart_path, df=df, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['volume'])
+                elif chart_type == 'full':
+                    ma_data = analysis['trend_indicators']['moving_averages']  
+                    macd_data = analysis['trend_indicators']['macd']
+                    rsi_data = analysis['momentum_indicators']['rsi']['all']    
+                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data,macd_data=macd_data,rsi_data=rsi_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price','moving_averages','macd','rsi','volume'],intro_text=intro_text)
+
                 else:
                     await loading_message.edit_text(
                         "Invalid chart type. Available types: price, ma, macd, rsi, volume"
                     )
                     return
-
+        
                 if os.path.exists(chart_path):
                     await loading_message.delete()
-                    await update.message.reply_photo(
-                        photo=open(chart_path, 'rb'),
+                    await update.message.reply_document(
+                       document=open(chart_path, 'rb'),
                         caption=f"{coin_id.upper()} {chart_type.upper()} Chart ({days}d)"
                     )
 
@@ -256,3 +222,56 @@ class AnalysisHandler:
             await loading_message.edit_text(
                 f"⚠️ Error generating {chart_type} chart: {str(e)}"
             )
+    # async def _send_analysis_charts(self, update: Update, analysis: dict, coin_id: str,message: str):
+    #     """Generate and send multiple charts for full analysis"""
+    #     coin_id = DataProcessor.symbol_mapping[coin_id]
+    #     try:
+    #         message = 'yo'
+    #         df = self.data_processor.get_ohlcv_data(coin_id)
+    #         filename='selected_charts.pdf'
+    #         # Generate charts in temp files
+    #         with tempfile.TemporaryDirectory() as temp_dir:
+    #             # Price and MA chart
+    #             ma_data = analysis['trend_indicators']['moving_averages']
+                
+                
+    #             # MACD chart
+    #             macd_data = analysis['trend_indicators']['macd']
+                
+    #             # RSI chart
+    #             rsi_data = analysis['momentum_indicators']['rsi']['all']
+                
+
+    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, ma_data=ma_data, macd_data=macd_data, rsi_data=rsi_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages','rsi', 'macd'],labels=[message,'',''])
+    #             # Send charts
+    #             if os.path.exists(temp_dir+filename):
+    #                 await update.message.reply_document(
+    #                 document=open(temp_dir+filename, 'rb'),
+    #                 filename="Analysis_Charts.pdf"
+    #         )
+
+    #     except Exception as e:
+    #         await update.message.reply_text(
+    #             f"⚠️ Error generating charts: {str(e)}"
+    #         )
+
+    # async def _send_price_chart(self, update: Update, analysis: dict, coin_id: str,message:str):
+    #     """Send basic price chart for quick analysis"""
+    #     coin_id = DataProcessor.symbol_mapping[coin_id]
+
+    #     try:
+    #         df = self.data_processor.get_ohlcv_data(coin_id)
+    #         filename='Price_Charts.pdf'
+    #         with tempfile.TemporaryDirectory() as temp_dir:                
+    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'],labels=[message])
+    #             # Send charts
+    #             if os.path.exists(temp_dir+filename):
+    #                 await update.message.reply_document(
+    #                 document=open(temp_dir+filename, 'rb'),
+    #                 filename="Price_Charts.pdf"
+    #         )
+
+    #     except Exception as e:
+    #         await update.message.reply_text(
+    #             f"⚠️ Error generating price chart: {str(e)}"
+    #         )

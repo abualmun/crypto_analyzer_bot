@@ -18,7 +18,7 @@ class HandlerTester:
         message.reply_photo = AsyncMock()
         message.edit_text = AsyncMock()
         message.delete = AsyncMock()
-        
+        message.reply_document = AsyncMock()
         update = Mock(spec=Update)
         update.message = message
         update.effective_chat = Mock(spec=Chat)

@@ -37,7 +37,7 @@ async def start_command(update, context):
 def main():
     """Main function to run the bot"""
     # Create application
-    application = Application.builder().token(os.getenv('TELEGRAM_BOT_TOKEN')).build()
+    application = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()
 
     # Add command handlers
     application.add_handler(CommandHandler('start', start_command))
@@ -61,4 +61,5 @@ def main():
     application.run_polling()
 
 if __name__ == '__main__':
+    
     main()
