@@ -107,8 +107,8 @@ class AnalysisHandler:
                 return
 
             # Get quick analysis
-            analysis = self.analyzer.get_quick_analysis(coin_id)
-            formatted_message = self.formatter.format_quick_analysis(analysis, coin_id)
+            analysis = self.analyzer.analyze_coin(coin_id=coin_id,days=1)
+            formatted_message = self.formatter._format_summary(analysis['summary'])
             
             # Send text analysis
             await loading_message.edit_text(formatted_message)
