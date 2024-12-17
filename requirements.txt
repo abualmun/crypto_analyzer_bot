@@ -10,3 +10,4 @@ matplotlib
 reportlab
 praw
 textblob
+tweepy
