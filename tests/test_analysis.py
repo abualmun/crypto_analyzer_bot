@@ -26,7 +26,7 @@ analysis_result = analyzer.analyze_coin(coin_id, vs_currency, days)
 
 # # Ensure you have data to work with
 if "error" not in analysis_result:
-    df = analyzer.data_processor.get_ohlcv_data(coin_id, vs_currency, days)
+    df = analyzer.data_processor.get_ohlcv_data("bitcoin", vs_currency, days)
     ma_data = analysis_result['trend_indicators']['moving_averages']
     # print(ma_data)
     # ma_data = {
