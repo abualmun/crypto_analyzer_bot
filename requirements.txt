@@ -5,6 +5,9 @@ pandas==2.0.0
 numpy==1.23.0
 TA-Lib==0.4.24
 mplfinance
+SQLAlchemy==2.0.36
 matplotlib
 reportlab
 emoji
+praw
+textblob
