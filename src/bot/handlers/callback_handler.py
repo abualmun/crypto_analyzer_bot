@@ -147,17 +147,14 @@ class CallbackHandler:
             try:    
                 if 'language' not in context.user_data:
                     context.user_data['language'] = 'en'  # Default to 'en'
+
                 if context.user_data['language'] == 'ar':
-                    print("h1")
                     context.user_data['language'] = 'en'
-                    
-                    await query.edit_message_text(
-                    context.user_data['language'])
                 else:
-                    print("h2")
                     context.user_data['language'] = 'ar'
-                    await query.edit_message_text(
-                    context.user_data['language'])
+                    
+                await query.edit_message_text(
+                    'language updated to '+context.user_data['language'],reply_markup=self.keyboards.get_main_menu())
             except Exception as e :
                 print(e)
             

@@ -113,7 +113,6 @@ class DataProcessor:
         final_df = final_df[~final_df.index.duplicated(keep='first')]
 
         # Fill any missing values
-        print(final_df)
         final_df.fillna(method='ffill', inplace=True)
         
         return final_df

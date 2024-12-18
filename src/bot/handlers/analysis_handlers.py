@@ -1,3 +1,5 @@
+from src.bot import keyboards
+from src.bot.keyboards import reply_keyboards
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from ...analysis.technical import TechnicalAnalyzer
@@ -20,6 +22,7 @@ class AnalysisHandler:
         self.data_processor = DataProcessor()
         self.news_fetcher = CryptoNewsFetcher(os.getenv("CRYPTO_NEWS_TOKEN"))
         self.news_formatter = NewsFormatter()
+        self.keyboards = reply_keyboards.AnalysisKeyboards()
         # Default timeframes
         self.timeframes = {
             '1d': 1,
@@ -239,8 +242,8 @@ class AnalysisHandler:
             progress_bar_template = "Generating Chart: [{}] {}%"
 
             async def update_progress_bar(target_progress,loading_message):
-                steps=5
-                delay=0.05
+                steps=3
+                delay=0.1
                 """
                 Smoothly update the progress bar to the target percentage.
                 
@@ -322,12 +325,11 @@ class AnalysisHandler:
                         document=open(chart_path, 'rb'),
                         caption=f"{coin_id.upper()} {chart_type.upper()} Chart ({days}d)"
                     )
-                    return
+                    
 
             # Final progress update
-            
-            await update_progress_bar(100,loading_message)
-
+            await update.message.reply_text("Do you wanna build a snowman?",reply_markup=self.keyboards.get_main_menu())
+            return
         except Exception as e:
             await loading_message.edit_text(f"⚠️ Error generating {chart_type} chart: {str(e)}")
 
