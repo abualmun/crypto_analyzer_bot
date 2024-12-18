@@ -12,6 +12,8 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         user_id = update.effective_user.id
         text = update.message.text.lower()
 
+
+        
         # Get user's current state
         state = self.user_states.get(user_id, {})
         

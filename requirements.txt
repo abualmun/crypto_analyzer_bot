@@ -11,5 +11,5 @@ reportlab
 emoji
 praw
 textblob
-
+asyncio
 tweepy

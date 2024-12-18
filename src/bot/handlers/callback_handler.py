@@ -7,14 +7,14 @@ class CallbackHandler:
     def __init__(self):
         self.keyboards = AnalysisKeyboards()
         self.analysis_handler = AnalysisHandler()
-        self.user_states = {}  # Store user states
+        self.user_states = {'language':'en'}  # Store user states
 
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle callback queries from inline keyboards"""
         query = update.callback_query
         user_id = update.effective_user.id
         data = query.data
-
+        
         try:
             # Handle main menu callbacks
             if data.startswith("menu_"):
@@ -34,7 +34,7 @@ class CallbackHandler:
             
             # Handle settings callbacks
             elif data.startswith("settings_"):
-                await self._handle_settings_selection(query, user_id)
+                await self._handle_settings_selection(query, user_id,context)
             
             # Handle back buttons
             elif data.startswith("back_"):
@@ -131,13 +131,28 @@ class CallbackHandler:
             reply_markup=self.keyboards.get_timeframe_selection()
         )
 
-    async def _handle_settings_selection(self, query, user_id):
+    async def _handle_settings_selection(self, query, user_id,context):
         """Handle settings selections"""
         setting = query.data.split("_")[1]
         
         if setting == "language":
-            # Language selection implementation
-            pass
+            try:    
+                if 'language' not in context.user_data:
+                    context.user_data['language'] = 'en'  # Default to 'en'
+                if context.user_data['language'] == 'ar':
+                    print("h1")
+                    context.user_data['language'] = 'en'
+                    
+                    await query.edit_message_text(
+                    context.user_data['language'])
+                else:
+                    print("h2")
+                    context.user_data['language'] = 'ar'
+                    await query.edit_message_text(
+                    context.user_data['language'])
+            except Exception as e :
+                print(e)
+            
         elif setting == "timeframe":
             await query.edit_message_text(
                 "Select default timeframe:",

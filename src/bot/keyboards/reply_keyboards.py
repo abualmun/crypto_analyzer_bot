@@ -58,7 +58,7 @@ class AnalysisKeyboards:
     def get_settings_menu():
         """Create settings menu keyboard"""
         keyboard = [
-            [InlineKeyboardButton("🌐 Language", callback_data="settings_language")],
+            [InlineKeyboardButton("🌐 Switch Language", callback_data="settings_language")],
             [InlineKeyboardButton("⏰ Default Timeframe", callback_data="settings_timeframe")],
             [InlineKeyboardButton("📊 Default Chart Type", callback_data="settings_chart")],
             [InlineKeyboardButton("↩️ Back to Menu", callback_data="back_main")]

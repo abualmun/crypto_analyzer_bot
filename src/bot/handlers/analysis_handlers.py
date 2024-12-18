@@ -3,6 +3,7 @@ from telegram.ext import ContextTypes
 from ...analysis.technical import TechnicalAnalyzer
 from ...utils.formatters import TelegramFormatter
 from ...data.processor import DataProcessor
+import asyncio
 from ...analysis.plot_charts import (
     create_plot_style,
     save_charts_to_pdf
@@ -16,6 +17,7 @@ class AnalysisHandler:
         self.formatter = TelegramFormatter()
         self.data_processor = DataProcessor()
         
+        
         # Default timeframes
         self.timeframes = {
             '1d': 1,
@@ -25,6 +27,8 @@ class AnalysisHandler:
         }
 
     async def cmd_analyze(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        
+        self.formatter.set_language(context.user_data['language'])
         """Handler for /analyze command"""
         if not context.args:
             await update.message.reply_text(
@@ -82,6 +86,8 @@ class AnalysisHandler:
             # )
 
     async def cmd_quick(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.formatter.set_language(context.user_data['language'])
+
         """Handler for /quick command"""
         if not context.args:
             await update.message.reply_text(
@@ -129,6 +135,7 @@ class AnalysisHandler:
             )
 
     async def cmd_chart(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.formatter.set_language(context.user_data['language'])
         """Handler for /chart command"""
         if len(context.args) < 2:
             await update.message.reply_text(
@@ -168,60 +175,115 @@ class AnalysisHandler:
                 self.formatter.format_error_message(str(e))
             )
 
+
     async def _generate_and_send_chart(
-        self, 
-        update: Update, 
-        coin_id: str, 
-        chart_type: str, 
-        days: int,
-        loading_message: Update.message,
-        intro_text = None
-    ):
-        """Generate and send specific chart type"""
-        # coin_id = DataProcessor.symbol_mapping[coin_id]
+    self, 
+    update: Update, 
+    coin_id: str, 
+    chart_type: str, 
+    days: int,
+    loading_message: Update.message,
+    intro_text=None
+):
+        """Generate and send specific chart type with progress bar."""
         try:
-            df = self.data_processor.get_ohlcv_data(coin_id = DataProcessor.symbol_mapping[coin_id], days=days)
+            # Initialize progress
+            progress = 0
+            progress_bar_template = "Generating Chart: [{}] {}%"
+
+            async def update_progress_bar(target_progress,loading_message):
+                steps=5
+                delay=0.05
+                """
+                Smoothly update the progress bar to the target percentage.
+                
+                Args:
+                    target_progress (int): The target progress percentage (0 to 100).
+                    steps (int): The number of smooth steps to reach the target.
+                    delay (float): Time delay (in seconds) between steps.
+                """
+                nonlocal progress  # Use the outer `progress` variable
+                increment = (target_progress - progress) / steps
+                current_message = None  # Store the last sent message content
+
+                for _ in range(steps):
+                    progress += increment
+                    filled_length = int(20 * progress / 100)  # Bar length: 20 chars
+                    bar = "█" * filled_length + " " * (20 - filled_length)
+                    new_message = progress_bar_template.format(bar, int(progress))
+
+                    # Only update if the message content has changed
+                    if new_message != current_message:
+                        current_message = new_message
+                        await loading_message.edit_text(new_message)
+
+                    await asyncio.sleep(delay)
+            # Step 1: Load OHLCV data
+            loading_message = await update.message.reply_text(
+            self.formatter.format_loading_message()
+        )
+            await update_progress_bar(progress,loading_message)
+            df = self.data_processor.get_ohlcv_data(coin_id=DataProcessor.symbol_mapping[coin_id], days=days)
+
+            await update_progress_bar(progress+ 20,loading_message)
+
+            # Step 2: Perform analysis
             analysis = self.analyzer.analyze_coin(coin_id, days=days)
+            await update_progress_bar(progress+20,loading_message)
 
             with tempfile.TemporaryDirectory() as temp_dir:
                 chart_path = os.path.join(temp_dir, f'{chart_type}_chart.pdf')
 
+                # Step 3: Generate chart based on type
                 if chart_type == 'price':
                     save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
                 elif chart_type == 'ma':
                     ma_data = analysis['trend_indicators']['moving_averages']
-                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
+                    save_charts_to_pdf(filename=chart_path, df=df, ma_data=ma_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
                 elif chart_type == 'macd':
                     macd_data = analysis['trend_indicators']['macd']
-                    save_charts_to_pdf(filename=chart_path, df=df,macd_data=macd_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
+                    save_charts_to_pdf(filename=chart_path, df=df, macd_data=macd_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
                 elif chart_type == 'rsi':
                     rsi_data = analysis['momentum_indicators']['rsi']['all']
-                    save_charts_to_pdf(filename=chart_path, df=df,rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
+                    save_charts_to_pdf(filename=chart_path, df=df, rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
                 elif chart_type == 'volume':
                     save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['volume'])
                 elif chart_type == 'full':
                     ma_data = analysis['trend_indicators']['moving_averages']  
                     macd_data = analysis['trend_indicators']['macd']
                     rsi_data = analysis['momentum_indicators']['rsi']['all']    
-                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data,macd_data=macd_data,rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price','moving_averages','macd','rsi','volume'],intro_text=intro_text)
-
-                else:
-                    await loading_message.edit_text(
-                        "Invalid chart type. Available types: price, ma, macd, rsi, volume"
+                    save_charts_to_pdf(
+                        filename=chart_path,
+                        df=df,
+                        ma_data=ma_data,
+                        macd_data=macd_data,
+                        rsi_data=rsi_data,
+                        style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'),
+                        charts_to_include=['price', 'moving_averages', 'macd', 'rsi', 'volume'],
+                        intro_text=intro_text
                     )
+                else:
+                    await loading_message.edit_text("Invalid chart type. Available types: price, ma, macd, rsi, volume")
                     return
-        
+
+                await update_progress_bar(progress+40,loading_message)
+
+                # Step 4: Send the chart
                 if os.path.exists(chart_path):
                     await loading_message.delete()
                     await update.message.reply_document(
-                       document=open(chart_path, 'rb'),
+                        document=open(chart_path, 'rb'),
                         caption=f"{coin_id.upper()} {chart_type.upper()} Chart ({days}d)"
                     )
+                    return
+
+            # Final progress update
+            
+            await update_progress_bar(100,loading_message)
 
         except Exception as e:
-            await loading_message.edit_text(
-                f"⚠️ Error generating {chart_type} chart: {str(e)}"
-            )
+            await loading_message.edit_text(f"⚠️ Error generating {chart_type} chart: {str(e)}")
+
     # async def _send_analysis_charts(self, update: Update, analysis: dict, coin_id: str,message: str):
     #     """Generate and send multiple charts for full analysis"""
     #     coin_id = DataProcessor.symbol_mapping[coin_id]

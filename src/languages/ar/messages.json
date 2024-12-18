@@ -38,4 +38,18 @@
     "weak": "ضعيف",
     
     "resistance_at": "مستوى المقاومة عند",
-    "support_at
+    "support_at": "Support at",
+    "next_resistance": "Next resistance",
+    "next_support": "Next support",
+    
+    "very_high_risk": "Very High Risk",
+    "high_risk": "High Risk",
+    "medium_risk": "Medium Risk",
+    "low_risk": "Low Risk",
+    
+    "strong_buy": "Strong Buy",
+    "buy": "Buy",
+    "sell": "Sell",
+    "strong_sell": "Strong Sell",
+    "hold": "Hold"
+}

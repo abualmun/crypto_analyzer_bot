@@ -80,7 +80,7 @@ def clean_intro_text(intro_text):
     
     return cleaned_text
 
-def create_intro_page(intro_text, pdf, max_lines_per_page=7, font_size=14):
+def create_intro_page(intro_text, pdf, max_lines_per_page=21, font_size=14):
     """
     Dynamically create intro pages with UTF-8 and emoji support, 
     splitting text across multiple pages if needed.
@@ -125,7 +125,7 @@ def create_intro_page(intro_text, pdf, max_lines_per_page=7, font_size=14):
         pdf.savefig(fig, bbox_inches='tight')        
         plt.close(fig)
 
-def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None, support_levels=None, resistance_levels=None, style=None, charts_to_include=None, labels=None, intro_text=None, max_lines_per_page=7):
+def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None, support_levels=None, resistance_levels=None, style=None, charts_to_include=None, labels=None, intro_text=None, max_lines_per_page=21):
     """
     Save selected charts into a single PDF with optional labels, legends, and an introductory text page.
 
