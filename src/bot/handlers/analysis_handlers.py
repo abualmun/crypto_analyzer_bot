@@ -5,7 +5,7 @@ from ...utils.formatters import TelegramFormatter
 from ...utils.news_formatters import NewsFormatter
 from ...data.processor import DataProcessor
 from ...data.cc_news import CryptoNewsFetcher
-from ...analysis.plot_charts import (
+from ...analysis.plot_charts_html import (
     create_plot_style,
     save_charts_to_pdf
 )
@@ -232,7 +232,7 @@ class AnalysisHandler:
             analysis = self.analyzer.analyze_coin(coin_id, days=days)
 
             with tempfile.TemporaryDirectory() as temp_dir:
-                chart_path = os.path.join(temp_dir, f'{chart_type}_chart.pdf')
+                chart_path = os.path.join(temp_dir, f'{chart_type}_chart.html')
 
                 if chart_type == 'price':
                     save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
