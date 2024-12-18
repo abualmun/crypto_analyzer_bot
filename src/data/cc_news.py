@@ -2,9 +2,8 @@ import requests
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
-import time
 
-class CryptoNewsFetcher:    
+class CryptoNewsFetcher:
     def __init__(self, api_key: str):
         """
         Initialize the CryptoCompare News API client.
@@ -13,40 +12,54 @@ class CryptoNewsFetcher:
             api_key (str): CryptoCompare API key
         """
         self.api_key = api_key
-        self.base_url = "https://min-api.cryptocompare.com/data/v2"
-        self.headers = {
-            'authorization': f'Apikey {self.api_key}'
-        }
-        
-    def get_news_by_coin(self, 
-                        coin: str,
-                        limit: int = 50,
-                        categories: Optional[str] = None) -> Tuple[pd.DataFrame, bool]:
+        self.base_url = "https://data-api.cryptocompare.com/news/v1/article"
+    
+    def _safe_timestamp_to_datetime(self, timestamp) -> Optional[datetime]:
         """
-        Get news articles related to a specific cryptocurrency.
+        Safely convert timestamp to datetime.
         
         Args:
-            coin (str): Cryptocurrency symbol (e.g., 'BTC', 'ETH')
-            limit (int): Maximum number of news articles to fetch (max 50)
-            categories (str, optional): News categories to filter by (e.g., 'Trading,Business')
+            timestamp: Unix timestamp or None
+            
+        Returns:
+            datetime or None if conversion fails
+        """
+        try:
+            return datetime.fromtimestamp(timestamp) if timestamp else None
+        except (TypeError, ValueError):
+            return None
+    
+    def get_news_by_coin(self, 
+                        categories: str,
+                        limit: int = 10,
+                        lang: str = "EN") -> Tuple[pd.DataFrame, bool]:
+        """
+        Get news articles related to specific cryptocurrency categories.
+        
+        Args:
+            categories (str): Cryptocurrency categories (e.g., 'BTC,ETH')
+            limit (int): Maximum number of news articles to fetch
+            lang (str): Language of articles (default: 'EN')
             
         Returns:
             Tuple[pd.DataFrame, bool]: (DataFrame containing news articles, success status)
         """
-        endpoint = f"{self.base_url}/news/"
-        
         params = {
-            'categories': categories if categories else 'ALL',
-            'excludeCategories': 'Sponsored',
-            'feeds': 'ALL',
-            'limit': min(limit, 50),  # API max is 50
+            'categories': categories,
+            'lang': lang,
+            'limit': limit,
+            'api_key': self.api_key
+        }
+        
+        headers = {
+            'Content-type': 'application/json; charset=UTF-8'
         }
         
         try:
             response = requests.get(
-                endpoint,
-                headers=self.headers,
-                params=params
+                f"{self.base_url}/list",
+                params=params,
+                headers=headers
             )
             
             if response.status_code != 200:
@@ -59,35 +72,42 @@ class CryptoNewsFetcher:
                 print("No news articles found")
                 return pd.DataFrame(), False
             
-            # Filter articles related to the specified coin
-            coin = coin.upper()
             articles = []
             
             for article in data['Data']:
-                # Check if article is related to the specified coin
-                if (coin in article.get('categories', '').upper() or
-                    coin in article.get('title', '').upper() or
-                    coin in article.get('body', '').upper()):
+                try:
+                    # Extract categories safely
+                    category_data = article.get('CATEGORY_DATA', [])
+                    categories = [cat.get('NAME', '') for cat in category_data if cat.get('NAME')]
+                    
+                    # Extract source data safely
+                    source_data = article.get('SOURCE_DATA', {})
                     
                     articles.append({
-                        'id': article.get('id'),
-                        'title': article.get('title'),
-                        'body': article.get('body'),
-                        'published_at': datetime.fromtimestamp(article.get('published_on', 0)),
-                        'url': article.get('url'),
-                        'source': article.get('source'),
-                        'categories': article.get('categories'),
-                        'upvotes': article.get('upvotes', 0),
-                        'downvotes': article.get('downvotes', 0),
-                        'source_info': {
-                            'name': article.get('source_info', {}).get('name'),
-                            'lang': article.get('source_info', {}).get('lang'),
-                            'img': article.get('source_info', {}).get('img'),
-                        }
+                        'id': article.get('ID'),
+                        'guid': article.get('GUID'),
+                        'published_on': self._safe_timestamp_to_datetime(article.get('PUBLISHED_ON')),
+                        'title': article.get('TITLE', ''),
+                        'url': article.get('URL', ''),
+                        'image_url': article.get('IMAGE_URL', ''),
+                        'body': article.get('BODY', ''),
+                        'tags': article.get('KEYWORDS', ''),
+                        'categories': '|'.join(categories) if categories else '',
+                        'language': article.get('LANG', ''),
+                        'source_name': source_data.get('NAME', ''),
+                        'source_url': source_data.get('URL', ''),
+                        'upvotes': article.get('UPVOTES', 0),
+                        'downvotes': article.get('DOWNVOTES', 0),
+                        'sentiment': article.get('SENTIMENT', ''),
+                        'created_on': self._safe_timestamp_to_datetime(article.get('CREATED_ON')),
+                        'updated_on': self._safe_timestamp_to_datetime(article.get('UPDATED_ON'))
                     })
+                except Exception as e:
+                    print(f"Warning: Error processing article: {str(e)}")
+                    continue
             
             if not articles:
-                print(f"No articles found specifically about {coin}")
+                print("No valid articles found after processing")
                 return pd.DataFrame(), False
             
             return pd.DataFrame(articles), True
@@ -114,8 +134,8 @@ class CryptoNewsFetcher:
         except Exception as e:
             print(f"Error saving news to CSV: {str(e)}")
             return False
-            
-    def get_coin_news_stats(self, df: pd.DataFrame) -> Dict:
+    
+    def get_news_stats(self, df: pd.DataFrame) -> Dict:
         """
         Get basic statistics about the news articles.
         
@@ -127,17 +147,25 @@ class CryptoNewsFetcher:
         """
         if df.empty:
             return {}
-            
-        return {
-            'total_articles': len(df),
-            'unique_sources': df['source'].nunique(),
-            'most_common_source': df['source'].mode().iloc[0],
-            'earliest_article': df['published_at'].min(),
-            'latest_article': df['published_at'].max(),
-            'avg_upvotes': df['upvotes'].mean(),
-            'total_upvotes': df['upvotes'].sum(),
-            'categories': ', '.join(sorted(set(
+        
+        try:
+            # Get all categories (split the '|' separated strings)
+            all_categories = [
                 cat for cats in df['categories'].dropna() 
-                for cat in cats.split('|')
-            )))
-        }
+                for cat in cats.split('|') if cats
+            ]
+            
+            return {
+                'total_articles': len(df),
+                'unique_sources': df['source_name'].nunique(),
+                'most_common_source': df['source_name'].mode().iloc[0] if not df['source_name'].empty else None,
+                'earliest_article': df['published_on'].min(),
+                'latest_article': df['published_on'].max(),
+                'avg_upvotes': df['upvotes'].mean(),
+                'total_upvotes': df['upvotes'].sum(),
+                'sentiment_distribution': df['sentiment'].value_counts().to_dict(),
+                'top_categories': pd.Series(all_categories).value_counts().head(5).to_dict() if all_categories else {}
+            }
+        except Exception as e:
+            print(f"Error calculating statistics: {str(e)}")
+            return {}
