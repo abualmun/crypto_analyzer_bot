@@ -15,6 +15,8 @@ class CallbackHandler:
         user_id = update.effective_user.id
         data = query.data
         
+        if 'language' not in context.user_data:
+                    context.user_data['language'] = 'en'  # Default to 'en'
         try:
             # Handle main menu callbacks
             if data.startswith("menu_"):
