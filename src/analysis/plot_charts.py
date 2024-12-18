@@ -5,6 +5,7 @@ from matplotlib.backends.backend_pdf import PdfPages
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import emoji
+import re
 
 # Font Configuration for UTF-8 and Emoji Support
 plt.rcParams['font.family'] = 'DejaVu Sans'  # Ensures emojis and UTF-8 text are supported
@@ -36,33 +37,112 @@ def create_plot_style(grid=True, volume=True, color_up='green', color_down='red'
         facecolor=bgcolor
     )
 
-def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None, support_levels=None, resistance_levels=None, style=None, charts_to_include=None, labels=None, intro_text=None):
-    """Save selected charts into a single PDF with optional labels, legends, and an introductory text page."""
-    def create_intro_page(intro_text, pdf):
-        """Dynamically create an intro page with UTF-8 and emoji support."""
-        # Process emojis in the text
-        text_lines = [emoji.emojize(line, language='alias') for line in intro_text.split("\n")]
+import re
+import emoji
+
+def clean_intro_text(intro_text):
+    """
+    Clean intro text by removing unrecognized characters and non-printable characters.
+    
+    Args:
+        intro_text (str): Original input text
+    
+    Returns:
+        str: Cleaned text with only recognized characters
+    """
+    if not intro_text:
+        return ""
+    
+    # Convert to string and handle potential non-string inputs
+    intro_text = str(intro_text)
+    
+    # Remove any characters that are not:
+    # - Alphanumeric (ASCII and Unicode)
+    # - Basic punctuation
+    # - Whitespace
+    # - Emojis
+    def is_valid_char(char):
+        return (
+            char.isalnum() or  # Alphanumeric characters
+            char.isspace() or  # Whitespace
+            char in '.,;:!?()[]{}"-' or  # Basic punctuation
+            '\U0001F600' <= char <= '\U0001F64F' or  # Emoticons
+            '\U0001F300' <= char <= '\U0001F5FF' or  # Misc Symbols and Pictographs
+            '\U0001F680' <= char <= '\U0001F6FF' or  # Transport and Map Symbols
+            '\U0001F1E0' <= char <= '\U0001F1FF'     # Flags
+        )
+    
+    # Filter out invalid characters
+    cleaned_text = ''.join(char for char in intro_text if is_valid_char(char))
+    
+    # Process emojis
+    cleaned_text = emoji.emojize(cleaned_text, language='alias')
+    
+    return cleaned_text
+
+def create_intro_page(intro_text, pdf, max_lines_per_page=7, font_size=14):
+    """
+    Dynamically create intro pages with UTF-8 and emoji support, 
+    splitting text across multiple pages if needed.
+    
+    Args:
+        intro_text (str): Text to display
+        pdf (PdfPages): PDF file to save pages to
+        max_lines_per_page (int): Maximum number of lines per page
+        font_size (float): Font size for text
+    """
+    # Clean the text first
+    cleaned_text = clean_intro_text(intro_text)
+    
+    # Process emojis in the text
+    text_lines = [emoji.emojize(line, language='alias') for line in cleaned_text.split("\n")]
+    
+    # Split text into pages if it exceeds max_lines_per_page
+    for page_start in range(0, len(text_lines), max_lines_per_page):
+        page_lines = text_lines[page_start:page_start+max_lines_per_page]
         
         # Calculate figure height dynamically
-        num_lines = len(text_lines)
-        base_height = max(11, num_lines * 0.4)  # Scale height with text lines
-
+        base_height = 9  # Standard height
+        
         # Create the figure
         fig, ax = plt.subplots(figsize=(8.5, base_height), facecolor='white')
         ax.axis('off')  # Hide axes
         
         # Position and render the text
         start_y = 0.95  # Start closer to the top of the page
-        font_size = min(14, max(10, 18 - num_lines * 0.3))  # Adjust font size based on line count
         line_spacing = 0.04  # Reduced line spacing for tighter layout
         
-        for i, line in enumerate(text_lines):
+        for i, line in enumerate(page_lines):
             y_pos = start_y - (i * line_spacing)
             ax.text(0.05, y_pos, line, fontsize=font_size, ha='left', va='center', wrap=True, color='black')
         
+        # Add page number if multiple pages
+        if len(text_lines) > max_lines_per_page:
+            ax.text(0.95, 0.05, f'Page {page_start//max_lines_per_page + 1}', 
+                    fontsize=10, ha='right', va='bottom', color='gray')
+        
         # Save the page to PDF
-        pdf.savefig(fig, bbox_inches='tight')
+        pdf.savefig(fig, bbox_inches='tight')        
         plt.close(fig)
+
+def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None, support_levels=None, resistance_levels=None, style=None, charts_to_include=None, labels=None, intro_text=None, max_lines_per_page=7):
+    """
+    Save selected charts into a single PDF with optional labels, legends, and an introductory text page.
+
+    Args:
+        filename (str): Output PDF filename
+        df (pd.DataFrame): Financial data DataFrame
+        ma_data (dict, optional): Moving average data
+        macd_data (dict, optional): MACD indicator data
+        rsi_data (array, optional): RSI indicator data
+        support_levels (list, optional): Support price levels
+        resistance_levels (list, optional): Resistance price levels
+        style (mpf.style, optional): Custom plot style
+        charts_to_include (list, optional): List of charts to generate
+        labels (list, optional): Labels for each chart
+        intro_text (str, optional): Introductory text for the first page
+        max_lines_per_page (int, optional): Maximum lines per intro page
+    """
     validate_dataframe(df)
     style = style or create_plot_style()
     charts_to_include = charts_to_include or ["price", "moving_averages", "macd", "rsi", "volume", "support_resistance"]
@@ -74,7 +154,7 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
     with PdfPages(filename) as pdf:
         # Add the intro text page
         if intro_text:
-            create_intro_page(intro_text, pdf)
+            create_intro_page(intro_text, pdf, max_lines_per_page=max_lines_per_page)
 
         # Generate charts
         for chart, label in zip(charts_to_include, labels):

@@ -235,23 +235,23 @@ class AnalysisHandler:
                 chart_path = os.path.join(temp_dir, f'{chart_type}_chart.pdf')
 
                 if chart_type == 'price':
-                    save_charts_to_pdf(filename=chart_path, df=df, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
+                    save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
                 elif chart_type == 'ma':
                     ma_data = analysis['trend_indicators']['moving_averages']
-                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
+                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
                 elif chart_type == 'macd':
                     macd_data = analysis['trend_indicators']['macd']
-                    save_charts_to_pdf(filename=chart_path, df=df,macd_data=macd_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
+                    save_charts_to_pdf(filename=chart_path, df=df,macd_data=macd_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
                 elif chart_type == 'rsi':
                     rsi_data = analysis['momentum_indicators']['rsi']['all']
-                    save_charts_to_pdf(filename=chart_path, df=df,rsi_data=rsi_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
+                    save_charts_to_pdf(filename=chart_path, df=df,rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
                 elif chart_type == 'volume':
-                    save_charts_to_pdf(filename=chart_path, df=df, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['volume'])
+                    save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['volume'])
                 elif chart_type == 'full':
                     ma_data = analysis['trend_indicators']['moving_averages']  
                     macd_data = analysis['trend_indicators']['macd']
                     rsi_data = analysis['momentum_indicators']['rsi']['all']    
-                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data,macd_data=macd_data,rsi_data=rsi_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price','moving_averages','macd','rsi','volume'],intro_text=intro_text)
+                    save_charts_to_pdf(filename=chart_path, df=df,ma_data=ma_data,macd_data=macd_data,rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price','moving_averages','macd','rsi','volume'],intro_text=intro_text)
 
                 else:
                     await loading_message.edit_text(
@@ -290,7 +290,7 @@ class AnalysisHandler:
     #             rsi_data = analysis['momentum_indicators']['rsi']['all']
                 
 
-    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, ma_data=ma_data, macd_data=macd_data, rsi_data=rsi_data, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages','rsi', 'macd'],labels=[message,'',''])
+    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, ma_data=ma_data, macd_data=macd_data, rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages','rsi', 'macd'],labels=[message,'',''])
     #             # Send charts
     #             if os.path.exists(temp_dir+filename):
     #                 await update.message.reply_document(
@@ -311,7 +311,7 @@ class AnalysisHandler:
     #         df = self.data_processor.get_ohlcv_data(coin_id)
     #         filename='Price_Charts.pdf'
     #         with tempfile.TemporaryDirectory() as temp_dir:                
-    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, support_levels=[100, 105], resistance_levels=[110, 115], style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'],labels=[message])
+    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'],labels=[message])
     #             # Send charts
     #             if os.path.exists(temp_dir+filename):
     #                 await update.message.reply_document(
