@@ -94,6 +94,12 @@ class CallbackHandler:
             await query.edit_message_text(
                 "Please enter the cryptocurrency symbol (e.g., btc):"
             )
+        
+        elif action == "news":
+            self.user_states[user_id] = {"action": "news_analysis"}
+            await query.edit_message_text(
+                "Please enter the cryptocurrency symbol (e.g., btc):"
+            )
             
         elif action == "full":
             self.user_states[user_id] = {"action": "full_analysis"}

@@ -2,7 +2,9 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from ...analysis.technical import TechnicalAnalyzer
 from ...utils.formatters import TelegramFormatter
+from ...utils.news_formatters import NewsFormatter
 from ...data.processor import DataProcessor
+from ...data.cc_news import CryptoNewsFetcher
 from ...analysis.plot_charts import (
     create_plot_style,
     save_charts_to_pdf
@@ -15,7 +17,8 @@ class AnalysisHandler:
         self.analyzer = TechnicalAnalyzer()
         self.formatter = TelegramFormatter()
         self.data_processor = DataProcessor()
-        
+        self.news_fetcher = CryptoNewsFetcher(os.getenv("CRYPTO_NEWS_TOKEN"))
+        self.news_formatter = NewsFormatter()
         # Default timeframes
         self.timeframes = {
             '1d': 1,
@@ -23,6 +26,51 @@ class AnalysisHandler:
             '1m': 30,
             '3m': 90
         }
+
+    async def cmd_news(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        """Handler for /news command"""
+        if not context.args:
+            await update.message.reply_text(
+                "Please provide a cryptocurrency symbol.\n"
+                "Example: /news btc"
+            )
+            return
+
+        coin_symbol = context.args[0].upper()
+        
+        # Show loading message
+        loading_message = await update.message.reply_text(
+            self.formatter.format_loading_message()
+        )
+
+        try:
+            # Get news articles
+            news_df, success = self.news_fetcher.get_news_by_coin(
+                categories=coin_symbol,
+                limit=10,
+                lang="EN"
+            )
+            
+            if not success or news_df.empty:
+                await loading_message.edit_text(
+                    f"❌ No news found for {coin_symbol}\n"
+                    "Please try again with a different symbol."
+                )
+                return
+
+            # Get formatted message
+            formatted_message = self.news_formatter.format_news(news_df, coin_symbol)
+            
+            # Send news summary
+            await loading_message.edit_text(
+                formatted_message,
+                disable_web_page_preview=True  # Prevent URL previews from cluttering the message
+            )
+
+        except Exception as e:
+            await loading_message.edit_text(
+                self.formatter.format_error_message(str(e))
+            )
 
     async def cmd_analyze(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handler for /analyze command"""

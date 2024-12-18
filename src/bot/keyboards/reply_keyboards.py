@@ -22,6 +22,7 @@ class AnalysisKeyboards:
         keyboard = [
             [InlineKeyboardButton("📊 Quick Analysis", callback_data="analysis_quick")],
             [InlineKeyboardButton("📈 Full Analysis", callback_data="analysis_full")],
+            [InlineKeyboardButton("🛰️ News Analysis", callback_data="analysis_news")],
             [InlineKeyboardButton("🔍 Custom Charts", callback_data="analysis_custom")],
             [InlineKeyboardButton("↩️ Back to Menu", callback_data="back_main")]
         ]

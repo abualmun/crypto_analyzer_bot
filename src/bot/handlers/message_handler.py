@@ -29,6 +29,11 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
                 # Prepare context.args for quick analysis
                 context.args = [text]
                 await self.analysis_handler.cmd_quick(update, context)
+            
+            elif action == 'news_analysis':
+                # Prepare context.args for quick analysis
+                context.args = [text]
+                await self.analysis_handler.cmd_news(update, context)
                 
             elif action == 'full_analysis':
                 # Create a context args list with symbol and timeframe

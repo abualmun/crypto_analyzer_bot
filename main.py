@@ -43,6 +43,7 @@ def main():
     application.add_handler(CommandHandler('start', start_command))
     application.add_handler(CommandHandler('analyze', analysis_handler.cmd_analyze))
     application.add_handler(CommandHandler('quick', analysis_handler.cmd_quick))
+    application.add_handler(CommandHandler('news', analysis_handler.cmd_news))
     application.add_handler(CommandHandler('chart', analysis_handler.cmd_chart))
     
     # Add callback handler for keyboard interactions
