@@ -1,10 +1,13 @@
 import os
 from dotenv import load_dotenv
-from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler, MessageHandler, filters,ContextTypes
 from src.bot.handlers.analysis_handlers import AnalysisHandler
 from src.bot.handlers.callback_handler import CallbackHandler
 from src.bot.handlers.message_handler import CustomMessageHandler  # Updated import
 from src.bot.keyboards.reply_keyboards import AnalysisKeyboards
+from telegram import Update
+
+import asyncio
 
 # Load environment variables
 load_dotenv()
@@ -35,6 +38,38 @@ async def start_command(update, context):
         reply_markup=keyboards.get_main_menu()
     )
 
+async def progress_bar(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Simulates a loading progress bar in the bot."""
+    message = await update.message.reply_text("Loading: [                    ] 0%")
+    progress = 0
+    
+    while progress <= 100:
+        # Generate the progress bar
+        filled_length = int(20 * progress / 100)  # 20 is the bar length
+        bar = "█" * filled_length + " " * (20 - filled_length)
+        
+        # Edit the message with the new progress
+        await message.edit_text(f"Loading: [{bar}] {progress}%")
+        
+        # Increment progress and wait
+        progress += 5
+        await asyncio.sleep(0.2)  # Simulate work being done
+    
+    # Final message when complete
+    await message.edit_text("✅ Loading Complete!")
+
+# Create the bot application
+async def main():
+    application = (
+        ApplicationBuilder()
+        .token("YOUR_TELEGRAM_BOT_TOKEN")
+        .build()
+    )
+
+    # Start the bot
+    await application.run_polling()
+
+
 def main():
     """Main function to run the bot"""
     # Create application
@@ -47,6 +82,9 @@ def main():
     application.add_handler(CommandHandler('news', analysis_handler.cmd_news))
     application.add_handler(CommandHandler('chart', analysis_handler.cmd_chart))
     
+    # Add the command handler
+    application.add_handler(CommandHandler("progress", progress_bar))
+
     # Add callback handler for keyboard interactions
     application.add_handler(CallbackQueryHandler(callback_handler.handle_callback))
 
@@ -54,7 +92,7 @@ def main():
     application.add_handler(
         MessageHandler(
             filters.TEXT & ~filters.COMMAND,
-            message_handler.handle_message
+            message_handler.handle_message,
         )
     )
 
@@ -62,6 +100,7 @@ def main():
     print('Starting bot...')
     application.run_polling()
 
-if __name__ == '__main__':
-    
-    main()
+# Run the bot
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(main())

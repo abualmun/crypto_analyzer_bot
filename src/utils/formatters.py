@@ -8,26 +8,34 @@ class TelegramFormatter:
             'en': self._load_language('en'),
             'ar': self._load_language('ar')
         }
-        self.current_language = 'en'
+        
+    current_language = 'en'
 
     def _load_language(self, lang_code: str) -> Dict:
+        
         try:
+
             file_path = os.path.join('src', 'languages', lang_code, 'messages.json')
+            
             with open(file_path, 'r', encoding='utf-8') as file:
-                return json.load(file)
+                file = json.load(file)
+                return file
+                
         except Exception:
             return {}
 
     def set_language(self, lang_code: str):
+
         if lang_code in self.languages:
             self.current_language = lang_code
 
     def _t(self, key: str) -> str:
         """Get translation for key"""
-        return self.languages[self.current_language].get(key, key)
+        return self.languages[self.current_language].get(key)
 
     def format_full_analysis(self, analysis: Dict, coin_id: str) -> str:
         """Format comprehensive analysis results"""
+        
         try:
             if "error" in analysis:
                 return f"⚠️ {self._t('error_analysis')}: {analysis['error']}"

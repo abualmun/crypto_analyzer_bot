@@ -12,7 +12,7 @@ praw
 textblob
 datapane
 plotly
-emoji
+emojiasyncio
 tweepy
 google-generativeai
 langchain
