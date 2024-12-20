@@ -14,3 +14,8 @@ datapane
 plotly
 emoji
 tweepy
+google-generativeai
+langchain
+langchain-google-genai
+langchain-core
+langchain-community

@@ -27,7 +27,8 @@ async def start_command(update, context):
     welcome_text = (
         "Welcome to CryptoAnalyst Bot! 🚀\n\n"
         "I can help you analyze cryptocurrencies with technical analysis "
-        "and charts. Select an option below to get started:"
+        "and charts. Select an option below to get started:\n"
+        "Or enter your text and let the agent help you out 🤖!"
     )
     await update.message.reply_text(
         welcome_text,
