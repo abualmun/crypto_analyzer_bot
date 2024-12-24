@@ -273,7 +273,7 @@ class AnalysisHandler:
             self.formatter.format_loading_message()
         )
             await update_progress_bar(progress,loading_message)
-            df = self.data_processor.get_ohlcv_data(coin_id=DataProcessor.symbol_mapping[coin_id], days=days)
+            df = self.data_processor.get_ohlcv_data(coin_id=coin_id, days=days)
 
             await update_progress_bar(progress+ 20,loading_message)
 
