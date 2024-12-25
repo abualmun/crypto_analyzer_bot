@@ -6,25 +6,13 @@ from typing import Dict, List, Optional, Tuple
 import logging
 
 from ..services.coingecko_api import CoinGeckoAPI
+from ..services.cache_manager import CacheManager
 
 class DataProcessor:
     def __init__(self):
         self.api = CoinGeckoAPI()
-        self._cache = {}  # Simple memory cache
-        self.cache_duration = 300  # Cache duration in seconds (5 minutes)
+        self.cache_manager = CacheManager("sqlite:///crypto_cache.db")
         self.logger = logging.getLogger(__name__)
-
-    # Common symbol to id mappings
-    symbol_mapping = {
-        'btc': 'bitcoin',
-        'eth': 'ethereum',
-        'usdt': 'tether',
-        'bnb': 'binance-coin',
-        'xrp': 'ripple',
-        # Add more common mappings
-    }
-
-
 
 
     def get_ohlcv_data(
@@ -46,10 +34,24 @@ class DataProcessor:
         Returns:
             pandas.DataFrame with OHLCV data or None if error occurs
         """
-        cache_key = f"{coin_id}_{vs_currency}_{days}_{interval}"
         
-        # Check cache first
-        cached_data = self._get_from_cache(cache_key)
+        coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
+        if coin_id is None:
+            self.logger.error(f"Coin ID not found for symbol: {coin_id}")
+            return None
+        # Calculate time range
+        end_time = datetime.utcnow()
+        start_time = end_time - timedelta(days=days)
+        
+        # Try to get data from cache
+        cached_data = self.cache_manager.get_ohlcv_data(
+            coin_id=coin_id,
+            vs_currency=vs_currency,
+            interval=days,
+            start_time=start_time,
+            end_time=end_time
+        )
+        
         if cached_data is not None:
             return cached_data
 
@@ -72,8 +74,13 @@ class DataProcessor:
             # Process and combine the data
             df = self._process_market_data(market_data, ohlc_data)
             
-            # Cache the processed data
-            self._cache_data(cache_key, df)
+            # Update cache
+            self.cache_manager.update_ohlcv_data(
+                coin_id=coin_id,
+                vs_currency=vs_currency,
+                interval=days,
+                df=df
+            )
             
             return df
 
@@ -133,29 +140,15 @@ class DataProcessor:
             time.sleep(1)  # Rate limiting
         return results
 
-    def _get_from_cache(self, key: str) -> Optional[pd.DataFrame]:
-        """
-        Retrieve data from cache if still valid.
-        """
-        if key in self._cache:
-            timestamp, data = self._cache[key]
-            if time.time() - timestamp < self.cache_duration:
-                return data
-            else:
-                del self._cache[key]
-        return None
-
-    def _cache_data(self, key: str, data: pd.DataFrame):
-        """
-        Cache data with current timestamp.
-        """
-        self._cache[key] = (time.time(), data)
-
     def get_latest_price(self, coin_id: str, vs_currency: str = 'usd') -> Optional[float]:
         """
         Get the latest price for a coin.
         """
         try:
+            coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
+            if coin_id is None:
+                self.logger.error(f"Coin ID not found for symbol: {coin_id}")
+                return None
             price_data = self.api.get_simple_price(
                 ids=coin_id,
                 vs_currencies=vs_currency
@@ -165,33 +158,49 @@ class DataProcessor:
             self.logger.error(f"Error fetching price for {coin_id}: {str(e)}")
             return None
 
-    # src/data/processor.py
 
     def validate_coin_id(self, coin_id: str) -> bool:
         """
-        Validate if a coin ID exists in CoinGecko.
-        Add common symbol mappings for better UX.
+        Validate if a coin ID exists, checking cache first.
         """
-        # Common symbol to id mappings
-        
+        # Check cache first
+        coins = self.get_available_coins()
+        cached_metadata = self.cache_manager.get_coin_metadata(coin_id)
+        if cached_metadata is not None:
+            return True
 
-        # Convert common symbols to their IDs
-        coin_id = DataProcessor.symbol_mapping.get(coin_id.lower(), coin_id.lower())
-
+        # If not in cache, check API
         try:
             search_result = self.api.search(coin_id)
             coins = search_result.get('coins', [])
-            return any(coin['id'] == coin_id for coin in coins)
+            
+            # If found, update cache
+            for coin in coins:
+                if coin['id'].lower() == coin_id.lower():
+                    self.cache_manager.update_coin_metadata(coin)
+                    return True
+            for coin in coins:
+                if coin['symbol'].lower() == coin_id.lower():
+                    self.cache_manager.update_coin_metadata(coin)
+                    return True
+            return False
+            
         except Exception as e:
-            print(f"Validation error: {str(e)}")
+            self.logger.error(f"Validation error: {str(e)}")
             return False
 
     def get_available_coins(self) -> List[Dict]:
-        """
-        Get list of available coins with basic info.
-        """
+        """Get list of available coins, updating cache if needed."""
         try:
-            return self.api.get_coins_list()
+            cached_coins = self.cache_manager.get_all_coins()
+            if cached_coins:
+                return cached_coins
+
+            coins = self.api.get_coins_list()
+            if coins:
+                self.cache_manager.update_coins_list(coins)
+            return coins
+
         except Exception as e:
             self.logger.error(f"Error fetching coin list: {str(e)}")
             return []

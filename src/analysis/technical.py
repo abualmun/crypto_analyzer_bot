@@ -10,7 +10,6 @@ class TechnicalAnalyzer:
 
     def analyze_coin(self, coin_id: str, vs_currency: str = 'usd', days: int = 30) -> Dict:
         """Perform enhanced technical analysis"""
-        coin_id = DataProcessor.symbol_mapping[coin_id.lower()]
         df = self.data_processor.get_ohlcv_data(coin_id, vs_currency, days)
         if df is None:
             return {"error": "Failed to fetch data"}
