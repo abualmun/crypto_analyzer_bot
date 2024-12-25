@@ -2,11 +2,13 @@ from telegram import Update
 from telegram.ext import ContextTypes
 from ..keyboards.reply_keyboards import AnalysisKeyboards
 from .analysis_handlers import AnalysisHandler
+from ...utils.formatters import TelegramFormatter
 
 class CallbackHandler:
     def __init__(self):
         self.keyboards = AnalysisKeyboards()
         self.analysis_handler = AnalysisHandler()
+        self.formatter = TelegramFormatter()  # Add formatter
         self.user_states = {'language':'en'}  # Store user states
 
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -16,7 +18,11 @@ class CallbackHandler:
         data = query.data
         
         if 'language' not in context.user_data:
-                    context.user_data['language'] = 'en'  # Default to 'en'
+            context.user_data['language'] = 'en'  # Default to 'en'
+        
+        # Set formatter language based on context
+        self.formatter.set_language(context.user_data['language'])
+        
         try:
             # Handle main menu callbacks
             if data.startswith("menu_"):
@@ -36,14 +42,14 @@ class CallbackHandler:
             
             # Handle settings callbacks
             elif data.startswith("settings_"):
-                await self._handle_settings_selection(query, user_id,context)
+                await self._handle_settings_selection(query, user_id, context)
             
             # Handle back buttons
             elif data.startswith("back_"):
                 await self._handle_back_button(query, user_id)
 
         except Exception as e:
-            await query.answer(f"Error: {str(e)}")
+            await query.answer(f"{self.formatter._t('error')}: {str(e)}")
 
     async def _handle_menu_selection(self, query, user_id):
         """Handle main menu selections"""
@@ -51,29 +57,29 @@ class CallbackHandler:
         
         if action == "analysis":
             await query.edit_message_text(
-                "Select analysis type:",
+                self.formatter._t('select_analysis'),
                 reply_markup=self.keyboards.get_analysis_menu()
             )
             
         elif action == "charts":
             await query.edit_message_text(
-                "Select chart type:",
+                self.formatter._t('select_chart_type'),
                 reply_markup=self.keyboards.get_chart_types()
             )
             
         elif action == "help":
             help_text = (
-                "🤖 *CryptoAnalyst Bot Help*\n\n"
-                "*Analysis Commands:*\n"
-                "/analyze [symbol] - Full analysis\n"
-                "/quick [symbol] - Quick analysis\n"
-                "/chart [symbol] [type] - Specific chart\n\n"
-                "*Available Chart Types:*\n"
-                "• price - OHLC chart\n"
-                "• ma - Moving averages\n"
-                "• macd - MACD indicator\n"
-                "• rsi - RSI indicator\n"
-                "• volume - Volume analysis"
+                f"🤖 *{self.formatter._t('bot_help')}*\n\n"
+                f"*{self.formatter._t('analysis_commands')}:*\n"
+                f"/analyze [symbol] - {self.formatter._t('full_analysis')}\n"
+                f"/quick [symbol] - {self.formatter._t('quick_analysis')}\n"
+                f"/chart [symbol] [type] - {self.formatter._t('specific_chart')}\n\n"
+                f"*{self.formatter._t('available_chart_types')}:*\n"
+                f"• price - {self.formatter._t('price_chart')}\n"
+                f"• ma - {self.formatter._t('moving_averages')}\n"
+                f"• macd - {self.formatter._t('macd')}\n"
+                f"• rsi - {self.formatter._t('rsi')}\n"
+                f"• volume - {self.formatter._t('volume_chart')}"
             )
             await query.edit_message_text(
                 help_text,
@@ -83,7 +89,7 @@ class CallbackHandler:
             
         elif action == "settings":
             await query.edit_message_text(
-                "Select setting to modify:",
+                self.formatter._t('select_settings'),
                 reply_markup=self.keyboards.get_settings_menu()
             )
 
@@ -94,25 +100,25 @@ class CallbackHandler:
         if action == "quick":
             self.user_states[user_id] = {"action": "quick_analysis"}
             await query.edit_message_text(
-                "Please enter the cryptocurrency symbol (e.g., btc):"
+                self.formatter._t('provide_symbol_prompt')
             )
         
         elif action == "news":
             self.user_states[user_id] = {"action": "news_analysis"}
             await query.edit_message_text(
-                "Please enter the cryptocurrency symbol (e.g., btc):"
+                self.formatter._t('provide_symbol_prompt')
             )
             
         elif action == "full":
             self.user_states[user_id] = {"action": "full_analysis"}
             await query.edit_message_text(
-                "Please enter the cryptocurrency symbol (e.g., btc):",
+                self.formatter._t('provide_symbol_prompt'),
                 reply_markup=self.keyboards.get_timeframe_selection()
             )
             
         elif action == "custom":
             await query.edit_message_text(
-                "Select chart type:",
+                self.formatter._t('select_chart_type'),
                 reply_markup=self.keyboards.get_chart_types()
             )
 
@@ -123,9 +129,10 @@ class CallbackHandler:
         state["timeframe"] = timeframe
         self.user_states[user_id] = state
         
+        timeframe_display = self.formatter._t(f'time_{timeframe}')
         await query.edit_message_text(
-            f"Timeframe set to {timeframe.upper()}\n"
-            "Please enter the cryptocurrency symbol (e.g., btc):"
+            f"{self.formatter._t('timeframe_set')} {timeframe_display}\n"
+            f"{self.formatter._t('provide_symbol_prompt')}"
         )
 
     async def _handle_chart_selection(self, query, user_id):
@@ -133,39 +140,41 @@ class CallbackHandler:
         chart_type = query.data.split("_")[1]
         self.user_states[user_id] = {"action": "chart", "type": chart_type}
         
+        chart_name = self.formatter._t(f'{chart_type}_chart')
         await query.edit_message_text(
-            f"Selected {chart_type} chart\n"
-            "Please enter the cryptocurrency symbol (e.g., btc):",
+            f"{self.formatter._t('selected_chart')} {chart_name}\n"
+            f"{self.formatter._t('provide_symbol_prompt')}",
             reply_markup=self.keyboards.get_timeframe_selection()
         )
 
-    async def _handle_settings_selection(self, query, user_id,context):
+    async def _handle_settings_selection(self, query, user_id, context):
         """Handle settings selections"""
         setting = query.data.split("_")[1]
         
         if setting == "language":
             try:    
                 if 'language' not in context.user_data:
-                    context.user_data['language'] = 'en'  # Default to 'en'
-
-                if context.user_data['language'] == 'ar':
                     context.user_data['language'] = 'en'
-                else:
-                    context.user_data['language'] = 'ar'
-                    
+
+                new_lang = 'en' if context.user_data['language'] == 'ar' else 'ar'
+                context.user_data['language'] = new_lang
+                self.formatter.set_language(new_lang)
+                
                 await query.edit_message_text(
-                    'language updated to '+context.user_data['language'],reply_markup=self.keyboards.get_main_menu())
-            except Exception as e :
+                    self.formatter._t('language_updated'),
+                    reply_markup=self.keyboards.get_main_menu()
+                )
+            except Exception as e:
                 print(e)
             
         elif setting == "timeframe":
             await query.edit_message_text(
-                "Select default timeframe:",
+                self.formatter._t('select_timeframe'),
                 reply_markup=self.keyboards.get_timeframe_selection()
             )
         elif setting == "chart":
             await query.edit_message_text(
-                "Select default chart type:",
+                self.formatter._t('select_chart_type'),
                 reply_markup=self.keyboards.get_chart_types()
             )
 
@@ -175,11 +184,11 @@ class CallbackHandler:
         
         if destination == "main":
             await query.edit_message_text(
-                "Main Menu:",
+                self.formatter._t('main_menu'),
                 reply_markup=self.keyboards.get_main_menu()
             )
         elif destination == "analysis":
             await query.edit_message_text(
-                "Select analysis type:",
+                self.formatter._t('select_analysis'),
                 reply_markup=self.keyboards.get_analysis_menu()
             )

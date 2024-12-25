@@ -1,11 +1,17 @@
 {
     "error_analysis": "Analysis Error",
     "analysis_for": "Analysis for",
+    "analyzing": "Analyzing cryptocurrency data",
+    "error": "Error",
+    "loading": "Loading, please wait...",
+
     "current_price": "Current Price",
+    "price_change": "Price Change",
     "change": "Change",
     "high": "High",
     "low": "Low",
     "volume": "Volume",
+
     "trend_analysis": "Trend Analysis",
     "momentum_analysis": "Momentum Analysis",
     "volume_analysis": "Volume Analysis",
@@ -13,43 +19,146 @@
     "support_resistance": "Support & Resistance",
     "risk_assessment": "Risk Assessment",
     "summary": "Summary",
-    
+
     "trend_signal": "Trend Signal",
     "trend_strength": "Trend Strength",
+    "moving_averages": "Moving Averages",
+    "macd": "MACD",
+    "rsi": "RSI",
     "stochastic": "Stochastic",
     "volume_trend": "Volume Trend",
     "bollinger_bands": "Bollinger Bands",
     "historical_volatility": "Historical Volatility",
-    "risk_level": "Risk Level",
-    "volatility_level": "Volatility Level",
-    "market_strength": "Market Strength",
-    "overall_sentiment": "Overall Sentiment",
-    "confidence": "Confidence Level",
-    "key_signals": "Key Signals",
-    
-    "signal": "Signal",
-    "analyzing": "Analyzing cryptocurrency data",
-    "error": "Error",
-    
+
     "overbought": "Overbought",
     "oversold": "Oversold",
     "neutral": "Neutral",
     "strong": "Strong",
     "weak": "Weak",
-    
+
     "resistance_at": "Resistance at",
     "support_at": "Support at",
     "next_resistance": "Next resistance",
     "next_support": "Next support",
-    
+
+    "risk_level": "Risk Level",
+    "volatility_level": "Volatility Level",
+    "market_strength": "Market Strength",
     "very_high_risk": "Very High Risk",
     "high_risk": "High Risk",
     "medium_risk": "Medium Risk",
     "low_risk": "Low Risk",
-    
+
+    "signal": "Signal",
+    "overall_sentiment": "Overall Sentiment",
+    "confidence": "Confidence Level",
+    "key_signals": "Key Signals",
     "strong_buy": "Strong Buy",
     "buy": "Buy",
     "sell": "Sell",
     "strong_sell": "Strong Sell",
-    "hold": "Hold"
+    "hold": "Hold",
+
+    "provide_symbol_prompt": "Please provide a cryptocurrency symbol",
+    "analyze_example": "Example: /analyze btc",
+    "timeframe_optional": "Optional: Add timeframe /analyze btc 1w",
+    "invalid_symbol": "Invalid cryptocurrency symbol",
+    "invalid_timeframe": "Invalid timeframe. Please use: 1d, 1w, 1m, or 3m",
+
+    "price_chart": "Price Chart",
+    "volume_chart": "Volume Chart",
+    "macd_chart": "MACD Chart",
+    "rsi_chart": "RSI Chart",
+
+    "news_summary": "News Summary",
+    "statistics": "Statistics",
+    "latest_news": "Latest News",
+    "source": "Source",
+    "published_on": "Published on",
+    "total_articles": "Total Articles",
+    "sentiment": "Sentiment",
+
+   
+
+    "back_to_menu": "Back to Menu",
+    "select_timeframe": "Select Timeframe",
+    "select_analysis": "Select Analysis Type",
+    "refresh": "Refresh",
+
+
+   "bot_help": "CryptoAnalyst Bot Help",
+    "analysis_commands": "Analysis Commands",
+    "specific_chart": "Specific Chart",
+    "available_chart_types": "Available Chart Types",
+    "select_settings": "Select Setting to Modify",
+    "timeframe_set": "Timeframe set to",
+    "selected_chart": "Selected chart",
+    "language_updated": "Language Updated Successfully",
+    "main_menu": "Main Menu",
+    "select_chart_type": "Select Chart Type",
+    "time_1d": "1 Day",
+    "time_1w": "1 Week",
+    "time_1m": "1 Month",
+    "time_3m": "3 Months",
+    
+    "ma_chart": "Moving Averages Chart",
+    
+    "try_different_symbol": "Please try a different symbol",
+    "quick_example": "Example: /quick btc",
+    "error_processing": "Error Processing Request",
+
+
+
+    "api_key_required": "Google API key is required",
+    "quick_analysis_tool_desc": "Analyze cryptocurrency prices with technical indicators",
+    "news_analysis_tool_desc": "Analyze crypto news and sentiment",
+    "explain_indicator_tool_desc": "Explain technical analysis indicators",
+    "invalid_timeframe_prompt": "Invalid timeframe. Use: 1d, 1w, 1m, or 3m",
+    "invalid_symbol_prompt": "Invalid cryptocurrency symbol",
+    "analysis_prompt": "Analyze {coin_id} for {timeframe} period:\n{analysis}",
+    "news_analysis_prompt": "Analyze recent news for {query}:\n{news}",
+    "indicator_explanation_prompt": "Explain the {indicator} technical indicator in crypto context",
+    "query_parse_error": "I couldn't understand your request. Try phrases like:\n- 'Analyze BTC price'\n- 'Latest news about ETH'",
+    "query_error": "Error processing query: {error}",
+    "no_news_found": "No news found for {symbol}",
+    "analysis_error": "Analysis error: {error}",
+
+    "date_label": "Date",
+    "price_label": "Price",
+    "volume_label": "Volume",
+    "price_chart_title": "Price Movement",
+    "ma_chart_title": "Moving Averages Analysis",
+    "macd_chart_title": "MACD Indicator",
+    "rsi_chart_title": "RSI Analysis",
+    "volume_chart_title": "Volume Analysis",
+    "ma20_label": "20-Day MA",
+    "ma50_label": "50-Day MA",
+    "ma200_label": "200-Day MA",
+    "macd_line": "MACD Line",
+    "signal_line": "Signal Line",
+    "histogram": "Histogram",
+    "open_price": "Open",
+    "high_price": "High",
+    "low_price": "Low",
+    "close_price": "Close",
+
+    "analysis_button": "📊 Analysis",
+    "charts_button": "📈 Charts",
+    "help_button": "📚 Help",
+    "settings_button": "⚙️ Settings",
+    "quick_analysis_button": "📊 Quick Analysis",
+    "full_analysis_button": "📈 Full Analysis",
+    "news_analysis_button": "🗞️ News Analysis",
+    "custom_charts_button": "📊 Custom Charts",
+    "back_button": "↩️ Back",
+    "language_button": "🌐 Switch Language",
+    "timeframe_button": "⏰ Default Timeframe",
+    "chart_type_button": "📊 Default Chart Type",
+
+    "generating_chart_progress": "Generating Chart: [{}] {}%",
+    "chart_complete": "Chart generation complete",
+    "error_generating_chart": "Error generating chart",
+    "provide_symbol_and_chart": "Please provide symbol and chart type",
+    "chart_example": "Example: /chart btc price"
+
 }

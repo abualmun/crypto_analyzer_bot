@@ -32,11 +32,12 @@ class AnalysisHandler:
         }
 
     async def cmd_news(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
+        self.formatter.set_language(context.user_data['language'])
+
         """Handler for /news command"""
         if not context.args:
             await update.message.reply_text(
-                "Please provide a cryptocurrency symbol.\n"
-                "Example: /news btc"
+                self.formatter._t('provide_symbol_news')
             )
             return
 
@@ -57,8 +58,7 @@ class AnalysisHandler:
             
             if not success or news_df.empty:
                 await loading_message.edit_text(
-                    f"❌ No news found for {coin_symbol}\n"
-                    "Please try again with a different symbol."
+                         f"❌ {self.formatter._t('no_news_found')}: {coin_symbol}"
                 )
                 return
 
@@ -77,37 +77,31 @@ class AnalysisHandler:
             )
 
     async def cmd_analyze(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        
-        self.formatter.set_language(context.user_data['language'])
         """Handler for /analyze command"""
         if not context.args:
             await update.message.reply_text(
-                "Please provide a cryptocurrency symbol.\n"
-                "Example: /analyze btc\n"
-                "Optional: Add timeframe /analyze btc 1w"
+                f"{self.formatter._t('provide_symbol_prompt')}\n"
+                f"{self.formatter._t('analyze_example')}\n"
+                f"{self.formatter._t('timeframe_optional')}"
             )
             return
-
-        coin_id = context.args[0].lower()
+      
+        coin_id = context.args[0].lower()       
         timeframe = context.args[1].lower() if len(context.args) > 1 else '1d'
-
         if timeframe not in self.timeframes:
-            await update.message.reply_text(
-                "Invalid timeframe. Please use: 1d, 1w, 1m, or 3m"
-            )
+            await update.message.reply_text(self.formatter._t('invalid_timeframe'))
             return
 
         # Show loading message
         loading_message = await update.message.reply_text(
-            self.formatter.format_loading_message()
+            self.formatter._t('loading')
         )
 
         try:
-            # Validate coin
             if not self.data_processor.validate_coin_id(coin_id):
                 await loading_message.edit_text(
-                    f"❌ Invalid cryptocurrency symbol: {coin_id}\n"
-                    "Please try again with a valid symbol."
+                    f"❌ {self.formatter._t('invalid_symbol')}: {coin_id}\n"
+                    f"{self.formatter._t('provide_symbol_prompt')}"
                 )
                 return
 
@@ -141,8 +135,8 @@ class AnalysisHandler:
         """Handler for /quick command"""
         if not context.args:
             await update.message.reply_text(
-                "Please provide a cryptocurrency symbol.\n"
-                "Example: /quick btc"
+                f"{self.formatter._t('provide_symbol_prompt')}\n"
+                f"{self.formatter._t('quick_example')}"
             )
             return
 
@@ -157,8 +151,8 @@ class AnalysisHandler:
             # Validate coin
             if not self.data_processor.validate_coin_id(coin_id):
                 await loading_message.edit_text(
-                    f"❌ Invalid cryptocurrency symbol: {coin_id}\n"
-                    "Please try again with a valid symbol."
+                     f"❌ {self.formatter._t('invalid_symbol')}: {coin_id}\n"
+                    f"{self.formatter._t('try_different_symbol')}"
                 )
                 return
 
@@ -189,9 +183,9 @@ class AnalysisHandler:
         """Handler for /chart command"""
         if len(context.args) < 2:
             await update.message.reply_text(
-                "Please provide symbol and chart type.\n"
-                "Example: /chart btc price\n"
-                "Available types: price, ma, macd, rsi, volume"
+           f"{self.formatter._t('provide_symbol_and_chart')}\n"
+           f"{self.formatter._t('chart_example')}\n"
+           f"{self.formatter._t('available_chart_types')}"
             )
             return
 
@@ -201,8 +195,8 @@ class AnalysisHandler:
 
         if timeframe not in self.timeframes:
             await update.message.reply_text(
-                "Invalid timeframe. Please use: 1d, 1w, 1m, or 3m"
-            )
+                self.formatter._t('invalid_timeframe')           
+                )
             return
 
         # Show loading message
@@ -239,7 +233,7 @@ class AnalysisHandler:
         try:
             # Initialize progress
             progress = 0
-            progress_bar_template = "Generating Chart: [{}] {}%"
+            progress_bar_template = self.formatter._t('generating_chart_progress')
 
             async def update_progress_bar(target_progress,loading_message):
                 steps=3
@@ -313,7 +307,7 @@ class AnalysisHandler:
                         intro_text=intro_text
                     )
                 else:
-                    await loading_message.edit_text("Invalid chart type. Available types: price, ma, macd, rsi, volume")
+                    await loading_message.edit_text(self.formatter._t('invalid_chart_type'))
                     return
 
                 await update_progress_bar(progress+40,loading_message)
@@ -328,10 +322,10 @@ class AnalysisHandler:
                     
 
             # Final progress update
-            await update.message.reply_text("Do you wanna build a snowman?",reply_markup=self.keyboards.get_main_menu())
+            await update.message.reply_text(self.formatter._t('chart_complete'),reply_markup=self.keyboards.get_main_menu())
             return
         except Exception as e:
-            await loading_message.edit_text(f"⚠️ Error generating {chart_type} chart: {str(e)}")
+            await loading_message.edit_text(f"{self.formatter._t('error_generating_chart')}: {str(e)}")
 
     # async def _send_analysis_charts(self, update: Update, analysis: dict, coin_id: str,message: str):
     #     """Generate and send multiple charts for full analysis"""

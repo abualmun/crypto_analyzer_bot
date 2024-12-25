@@ -17,7 +17,9 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         user_id = update.effective_user.id
         text = update.message.text.lower()
 
-
+        # Set language from context
+        if 'language' in context.user_data:
+            self.formatter.set_language(context.user_data['language'])
         
         # Get user's current state
         state = self.user_states.get(user_id, {})
@@ -25,7 +27,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         if not state:
             # No active state, ignore the message or provide guidance
             loading_message = await update.message.reply_text(
-            self.formatter.format_loading_message())
+            self.formatter._t('loading'))
 
             message = self.agent.process_query(text)
             print(message)
@@ -64,5 +66,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
             self.user_states.pop(user_id, None)
 
         except Exception as e:
-            await update.message.reply_text(f"Error processing request: {str(e)}")
+            await update.message.reply_text(
+                  f"{self.formatter._t('error_processing')}: {str(e)}"
+            )
             self.user_states.pop(user_id, None)

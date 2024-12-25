@@ -85,12 +85,12 @@ class CryptoAnalysisAgent:
         coin_id, timeframe = query.split(" ", 1)
         print(f"coin_id: {coin_id}, timeframe: {timeframe}")
         if timeframe not in self.timeframes:
-            return "Invalid timeframe. Please use: 1d, 1w, 1m, or 3m"
+           return self.formatter._t('invalid_timeframe_prompt')
 
         try:
             # Validate coin
             if not self.data_processor.validate_coin_id(coin_id):
-                return f"❌ Invalid cryptocurrency symbol: {coin_id}\n Please try again with a different symbol."
+               return f"❌ {self.formatter._t('invalid_symbol_prompt')}: {coin_id}"
 
             # Get analysis
             days = self.timeframes[timeframe]
@@ -100,13 +100,17 @@ class CryptoAnalysisAgent:
             formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
             print(f"formatted_message: {formatted_message}")
             # This is a placeholder - implement your actual analysis here
-            analysis_prompt = f"Provide a technical analysis for cryptocurrency query: {coin_id}. Here are custom technical analysis for {coin_id} for the last {timeframe} days:\n{formatted_message}"
+            analysis_prompt = self.formatter._t('analysis_prompt').format(
+               coin_id=coin_id,
+               timeframe=timeframe,
+               analysis=formatted_message
+            ) 
             response = self.llm.invoke([HumanMessage(content=analysis_prompt)])
             return response.content
 
         except Exception as e:
             print(str(e))
-            return(str(e))
+            return(self.formatter._t('analysis_error').format(error=str(e)))
         
     
 
@@ -119,11 +123,13 @@ class CryptoAnalysisAgent:
         )
         
         if not success or news_df.empty:
-            formatted_message= f"❌ No news found for {query}\n Please try again with a different symbol."
+            formatted_message= self.formatter._t('no_news_found').format(symbol=query)
         # Get formatted message
         formatted_message = self.news_formatter.format_news(news_df, query)
         # This is a placeholder - implement your actual analysis here
-        news_prompt = f"Provide recent news analysis for cryptocurrency query: {query}. Here are lastest news fetched:{formatted_message}"
+        news_prompt = self.formatter._t('news_analysis_prompt').format(
+           query=query,
+           news=formatted_message)
         response = self.llm.invoke([HumanMessage(content=news_prompt)])
         return response.content
     
@@ -140,7 +146,9 @@ class CryptoAnalysisAgent:
         indicator_name = query.strip()
 
         # If no external source, use a generic prompt
-        indicator_prompt = f"Explain the technical indicator '{indicator_name}' used in financial analysis. Provide example of use in term of crypto market."
+        indicator_prompt = self.formatter._t('indicator_explanation_prompt').format(
+           indicator=indicator_name
+       )
         response = self.llm.invoke([HumanMessage(content=indicator_prompt)])
         return response.content
 
@@ -163,14 +171,12 @@ class CryptoAnalysisAgent:
             return result
         except ValueError as e:
             if "Could not parse LLM output" in str(e):
-                return (
-                    "I couldn't understand your request. Please try phrases like:\n"
-                    "- 'Analyze BTC price for the next hour'\n"
-                    "- 'What's the latest news about ETH?'"
-                )
+                return {
+                   'output': self.formatter._t('query_parse_error')
+               }
             raise e
         except Exception as e:
-            raise Exception(f"Error processing query: {str(e)}")
+           raise Exception(self.formatter._t('query_error').format(error=str(e)))
 
 def main():
     """Example usage of the CryptoAnalysisAgent"""
