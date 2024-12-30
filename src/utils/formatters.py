@@ -19,6 +19,18 @@ class TelegramFormatter:
                 'ar': self._load_language('ar')
             }
             self._initialized = True
+            
+    def _get_education_content(self, language:str, category:str):
+        """
+        Get educational content from content.py
+         Args:
+            language: the language of the content
+            category: the educational category
+
+        Returns:
+             dict: the data for this category
+        """
+        return educational_content.get_content(language,category)
 
     def _load_language(self, lang_code: str) -> Dict:
         

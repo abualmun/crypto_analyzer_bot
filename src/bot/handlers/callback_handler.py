@@ -1,8 +1,10 @@
+# src/bot/handlers/callback_handler.py
 from telegram import Update
 from telegram.ext import ContextTypes
 from ..keyboards.reply_keyboards import AnalysisKeyboards
 from .analysis_handlers import AnalysisHandler
 from ...utils.formatters import TelegramFormatter
+from ...education.content import educational_content, get_module_by_key
 
 class CallbackHandler:
     def __init__(self):
@@ -47,6 +49,12 @@ class CallbackHandler:
             # Handle back buttons
             elif data.startswith("back_"):
                 await self._handle_back_button(query, user_id)
+                
+            elif data.startswith("help_"):
+                await self._handle_help_selection(query, user_id)
+                
+            elif data.startswith("education_"):
+                await self._handle_education_selection(query, user_id)
 
         except Exception as e:
             await query.answer(f"{self.formatter._t('error')}: {str(e)}")
@@ -68,29 +76,21 @@ class CallbackHandler:
             )
             
         elif action == "help":
-            help_text = (
-                f"🤖 *{self.formatter._t('bot_help')}*\n\n"
-                f"*{self.formatter._t('analysis_commands')}:*\n"
-                f"/analyze [symbol] - {self.formatter._t('full_analysis')}\n"
-                f"/quick [symbol] - {self.formatter._t('quick_analysis')}\n"
-                f"/chart [symbol] [type] - {self.formatter._t('specific_chart')}\n\n"
-                f"*{self.formatter._t('available_chart_types')}:*\n"
-                f"• price - {self.formatter._t('price_chart')}\n"
-                f"• ma - {self.formatter._t('moving_averages')}\n"
-                f"• macd - {self.formatter._t('macd')}\n"
-                f"• rsi - {self.formatter._t('rsi')}\n"
-                f"• volume - {self.formatter._t('volume_chart')}"
-            )
             await query.edit_message_text(
-                help_text,
-                parse_mode='Markdown',
-                reply_markup=self.keyboards.get_main_menu()
+                self.formatter._t('help_menu'),
+                reply_markup=self.keyboards.get_help_menu()
             )
             
         elif action == "settings":
             await query.edit_message_text(
                 self.formatter._t('select_settings'),
                 reply_markup=self.keyboards.get_settings_menu()
+            )
+            
+        elif action == "education":
+             await query.edit_message_text(
+                self.formatter._t('education_menu'),
+                reply_markup=self.keyboards.get_education_menu()
             )
 
     async def _handle_analysis_selection(self, query, user_id):
@@ -192,3 +192,128 @@ class CallbackHandler:
                 self.formatter._t('select_analysis'),
                 reply_markup=self.keyboards.get_analysis_menu()
             )
+        elif destination == "help":
+            await query.edit_message_text(
+                self.formatter._t('help_menu'),
+                reply_markup=self.keyboards.get_help_menu()
+            )
+            
+    async def _handle_help_selection(self, query, user_id):
+        """Handle help menu selections"""
+        section = query.data.split("_")[1]
+        
+        if section == "intro":
+            await query.edit_message_text(
+                self._get_help_intro_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "commands":
+            await query.edit_message_text(
+                self._get_help_commands_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "navigation":
+            await query.edit_message_text(
+                self._get_help_navigation_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "analysis":
+            await query.edit_message_text(
+                self._get_help_analysis_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "charts":
+            await query.edit_message_text(
+                self._get_help_charts_text(),
+               reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "news":
+           await query.edit_message_text(
+               self._get_help_news_text(),
+               reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "agent":
+            await query.edit_message_text(
+                self._get_help_agent_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "troubleshooting":
+           await query.edit_message_text(
+                self._get_help_troubleshooting_text(),
+               reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "settings":
+            await query.edit_message_text(
+                self._get_help_settings_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+            )
+        elif section == "feedback":
+           await query.edit_message_text(
+                self._get_help_feedback_text(),
+               reply_markup=self.keyboards.get_help_sub_menu()
+            )
+           
+    async def _handle_education_selection(self, query, user_id):
+        """Handle education menu selections"""
+        section = query.data.split("_")[1]
+         
+        if section == "back":
+            await query.edit_message_text(
+               self.formatter._t('education_menu'),
+                reply_markup=self.keyboards.get_education_menu()
+            )
+        else:
+            module = get_module_by_key(section)
+            if module:
+                text = f"*{module.get('title','')}*\n\n{module.get('text','')}\n\n"
+                links = module.get('links',[])
+                for link in links:
+                    text += f"[{link[0]}]({link[1]})\n"
+                
+                await query.edit_message_text(
+                   text,
+                   reply_markup=self.keyboards.get_education_sub_menu(),
+                    parse_mode="Markdown",
+                    disable_web_page_preview=True
+                )
+            
+    
+    def _get_help_intro_text(self):
+        """Returns the help intro text."""
+        return self.formatter._t("help_intro_text")
+    
+    def _get_help_commands_text(self):
+        """Returns the help commands text."""
+        return self.formatter._t("help_commands_text")
+    
+    def _get_help_navigation_text(self):
+        """Returns the help navigation text."""
+        return self.formatter._t("help_navigation_text")
+
+    def _get_help_analysis_text(self):
+         """Returns the help analysis text."""
+         return self.formatter._t("help_analysis_text")
+    
+    def _get_help_charts_text(self):
+        """Returns the help charts text."""
+        return self.formatter._t("help_charts_text")
+    
+    def _get_help_news_text(self):
+         """Returns the help news text."""
+         return self.formatter._t("help_news_text")
+    
+    def _get_help_agent_text(self):
+        """Returns the help ai agent text."""
+        return self.formatter._t("help_agent_text")
+    
+    def _get_help_troubleshooting_text(self):
+        """Returns the help troubleshooting text."""
+        return self.formatter._t("help_troubleshooting_text")
+
+    def _get_help_settings_text(self):
+        """Returns the help settings text."""
+        return self.formatter._t("help_settings_text")
+    
+    def _get_help_feedback_text(self):
+        """Returns the help feedback text."""
+        return self.formatter._t("help_feedback_text")

@@ -1,3 +1,4 @@
+# src/bot/keyboards/reply_keyboards.py
 from ...utils.formatters import TelegramFormatter
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -16,9 +17,13 @@ class AnalysisKeyboards:
                 InlineKeyboardButton(text=self.formatter._t('help_button'), callback_data="menu_help"),
                 InlineKeyboardButton(text=self.formatter._t('settings_button'), callback_data="menu_settings")
             ]
+            ,
+            [
+                InlineKeyboardButton(text=self.formatter._t('education_menu'), callback_data="menu_education")
+            ]
         ]
         return InlineKeyboardMarkup(keyboard)
-
+    
     def get_analysis_menu(self):
         """Create analysis selection keyboard"""
         keyboard = [
@@ -64,3 +69,46 @@ class AnalysisKeyboards:
             [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
         ]
         return InlineKeyboardMarkup(keyboard)
+    
+    def get_help_menu(self):
+        """Create help menu keyboard"""
+        keyboard = [
+            [InlineKeyboardButton(text=self.formatter._t('help_intro_button'), callback_data="help_intro")],
+             [InlineKeyboardButton(text=self.formatter._t('help_commands_button'), callback_data="help_commands")],
+           [InlineKeyboardButton(text=self.formatter._t('help_navigation_button'), callback_data="help_navigation")],
+            [InlineKeyboardButton(text=self.formatter._t('help_analysis_button'), callback_data="help_analysis")],
+           [InlineKeyboardButton(text=self.formatter._t('help_charts_button'), callback_data="help_charts")],
+            [InlineKeyboardButton(text=self.formatter._t('help_news_button'), callback_data="help_news")],
+           [InlineKeyboardButton(text=self.formatter._t('help_agent_button'), callback_data="help_agent")],
+            [InlineKeyboardButton(text=self.formatter._t('help_troubleshooting_button'), callback_data="help_troubleshooting")],
+           [InlineKeyboardButton(text=self.formatter._t('help_settings_button'), callback_data="help_settings")],
+           [InlineKeyboardButton(text=self.formatter._t('help_feedback_button'), callback_data="help_feedback")],
+           [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def get_help_sub_menu(self):
+        """Create help sub-menu keyboard"""
+        keyboard = [
+             [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_help")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    
+    def get_education_menu(self):
+         """Create education menu keyboard"""
+         keyboard = [
+              [InlineKeyboardButton(text=self.formatter._t('education_basic_concepts'), callback_data="education_basic_concepts")],
+                [InlineKeyboardButton(text=self.formatter._t('education_technical_analysis'), callback_data="education_technical_analysis")],
+               [InlineKeyboardButton(text=self.formatter._t('education_trading_strategies'), callback_data="education_trading_strategies")],
+                [InlineKeyboardButton(text=self.formatter._t('education_defi_nfts'), callback_data="education_defi_nfts")],
+                 [InlineKeyboardButton(text=self.formatter._t('education_security'), callback_data="education_security")],
+               [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
+        ]
+         return InlineKeyboardMarkup(keyboard)
+    
+    def get_education_sub_menu(self):
+         """Create education sub-menu keyboard"""
+         keyboard = [
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_education")]
+        ]
+         return InlineKeyboardMarkup(keyboard)
