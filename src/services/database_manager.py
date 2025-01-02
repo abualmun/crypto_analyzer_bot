@@ -1,13 +1,13 @@
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional, Union, Tuple
-from sqlalchemy import create_engine, and_, desc
+from sqlalchemy import String, create_engine, and_, desc, func
 from sqlalchemy.orm import sessionmaker, Session, joinedload
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 from sqlalchemy.orm.exc import DetachedInstanceError
 from contextlib import contextmanager
 import logging
-
-from database import Base, Coin, CoinPrice, OHLC, TrendingCoin
+from typing import List, Dict, Optional, Union, Tuple
+from .database import User, UserType, UserSearchHistory, UserActivity, Admin, AdminActivity, Base, Coin, CoinPrice, OHLC, TrendingCoin
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -287,4 +287,313 @@ class DatabaseManager:
                 return self._clone_object_list(trending)
         except SQLAlchemyError as e:
             logger.error(f"Error fetching trending coins: {str(e)}")
+            return []
+        
+
+
+        # Add these imports to existing ones
+
+
+    def create_user(self, user_data: Dict) -> Optional[Dict]:
+        """Create a new user in the database."""
+        try:
+            with self.session_scope() as session:
+                user = User(**user_data)
+                session.add(user)
+                session.flush()
+                return self._clone_object(user)
+        except SQLAlchemyError as e:
+            logger.error(f"Error creating user: {str(e)}")
+            return None
+
+    def get_user_by_telegram_id(self, telegram_id: str) -> Optional[Dict]:
+        """Retrieve a user by their Telegram ID."""
+        try:
+            with self.session_scope() as session:
+                user = session.query(User).filter_by(telegram_id=telegram_id).first()
+                return self._clone_object(user)
+        except SQLAlchemyError as e:
+            logger.error(f"Error fetching user with telegram_id {telegram_id}: {str(e)}")
+            return None
+
+    def update_user_type(self, user_id: int, new_type: UserType, admin_id: int) -> Optional[Dict]:
+        """Update a user's subscription type and log the change."""
+        try:
+            with self.session_scope() as session:
+                user = session.query(User).filter_by(id=user_id).first()
+                if not user:
+                    return None
+
+                old_type = user.user_type
+                user.user_type = new_type
+                user.last_active = datetime.utcnow()
+
+                # Log admin activity
+                admin_activity = AdminActivity(
+                    admin_id=admin_id,
+                    activity_type="user_type_update",
+                    target_user_id=user_id,
+                    details={
+                        "old_type": old_type.value,
+                        "new_type": new_type.value
+                    }
+                )
+                session.add(admin_activity)
+                session.flush()
+                return self._clone_object(user)
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating user type for user {user_id}: {str(e)}")
+            return None
+
+    def update_user_language(self, user_id: int, new_lang: UserType) -> bool:
+        """Update user's language."""
+        try:
+            with self.session_scope() as session:
+                user = session.query(User).filter_by(id=user_id).first()
+                if not user:
+                    return None
+
+                user.user_type = new_lang
+
+                session.flush()
+                return True
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating user language {user_id}: {str(e)}")
+            return False
+
+    def log_user_search(self, search_data: Dict) -> Optional[Dict]:
+        """Log a user's search activity."""
+        try:
+            with self.session_scope() as session:
+                search = UserSearchHistory(**search_data)
+                session.add(search)
+                session.flush()
+                return self._clone_object(search)
+        except SQLAlchemyError as e:
+            logger.error(f"Error logging search for user {search_data.get('user_id')}: {str(e)}")
+            return None
+
+    def log_user_activity(self, activity_data: Dict) -> Optional[Dict]:
+        """Log a user's activity."""
+        try:
+            with self.session_scope() as session:
+                activity = UserActivity(**activity_data)
+                session.add(activity)
+                session.flush()
+                return self._clone_object(activity)
+        except SQLAlchemyError as e:
+            logger.error(f"Error logging activity for user {activity_data.get('user_id')}: {str(e)}")
+            return None
+
+    def create_admin(self, admin_data: Dict) -> Optional[Dict]:
+        """
+        Create a new admin with specified role.
+        
+        admin_data should contain:
+        - user_id: ID of the user to make admin
+        - role: List of privilege strings
+        - created_by: ID of admin creating this admin
+        """
+        try:
+            with self.session_scope() as session:
+                # Check if user is already an admin
+                existing_admin = session.query(Admin).filter_by(
+                    user_id=admin_data['user_id'],
+                    is_active=True
+                ).first()
+                
+                if existing_admin:
+                    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                    logger.error(f"User {admin_data['user_id']} is already an admin")
+                    return None
+                print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                admin = Admin(
+                    user_id=admin_data['user_id'],
+                    role=admin_data['role'],
+                    created_by=admin_data.get('created_by')
+                )
+                session.add(admin)
+                
+                # Log admin creation
+                # activity = AdminActivity(
+                #     admin_id=admin_data['created_by'],
+                #     activity_type="admin_created",
+                #     target_user_id=admin_data['user_id'],
+                #     details={"role": admin_data['role']}
+                # )
+                # session.add(activity)
+                
+                # session.flush()
+                return self._clone_object(admin)
+        except SQLAlchemyError as e:
+            logger.error(f"Error creating admin: {str(e)}")
+            return None
+
+    def remove_admin(self, admin_id: int, removed_by: int) -> bool:
+        """
+        Remove an admin by setting is_active to False.
+        Returns True if successful, False otherwise.
+        """
+        try:
+            with self.session_scope() as session:
+                admin = session.query(Admin).filter_by(id=admin_id, is_active=True).first()
+                if not admin:
+                    logger.error(f"Active admin with ID {admin_id} not found")
+                    return False
+                    
+                admin.is_active = False
+                
+                # Log admin removal
+                activity = AdminActivity(
+                    admin_id=removed_by,
+                    activity_type="admin_removed",
+                    target_user_id=admin.user_id,
+                    details={"removed_admin_id": admin_id}
+                )
+                session.add(activity)
+                
+                session.flush()
+                return True
+        except SQLAlchemyError as e:
+            logger.error(f"Error removing admin {admin_id}: {str(e)}")
+            return False
+ 
+    def get_admin_by_user_id(self, user_id: int) -> Optional[Dict]:
+        """Get admin info by user ID if they are an admin."""
+        
+        try:
+            
+            with self.session_scope() as session:
+                admin = session.query(Admin).filter_by(
+                    user_id=user_id,
+                ).first()
+                print('aaaaaaaaaaaaaaaaaaaaaaaaa')
+                print(admin) 
+                return self._clone_object(admin)
+        except SQLAlchemyError as e:
+            logger.error(f"Error fetching admin for user {user_id}: {str(e)}")
+            return None
+
+    def get_most_popular_searches(self, limit: int = 10) -> List[Dict]:
+        """
+        Retrieve the most popular searches across all users.
+        
+        Args:
+            limit: Maximum number of results to return (default: 10)
+            
+        Returns:
+            List of dictionaries containing search term and count
+            Example: [{'search_term': 'BTC', 'count': 150}, ...]
+        """
+        try:
+            with self.session_scope() as session:
+                popular_searches = (
+                    session.query(
+                        UserSearchHistory.coin_id,
+                        func.count(UserSearchHistory.coin_id).label('search_count')
+                    )
+                    .group_by(UserSearchHistory.coin_id)
+                    .order_by(desc('search_count'))
+                    .limit(limit)
+                    .all()
+                )
+                
+                # Convert to list of dictionaries
+                return [
+                    {
+                        'search_term': search.coin_id,
+                        'count': search.search_count
+                    }
+                    for search in popular_searches
+                ]
+        except SQLAlchemyError as e:
+            logger.error(f"Error fetching popular searches: {str(e)}")
+            return []
+        
+    def get_most_popular_analysis_types(self, limit: int = 10) -> List[Dict]:
+        """
+        Retrieve the most frequently performed analysis types across all users.
+        Each unique combination of activity type and timestamp is counted as a separate analysis.
+        
+        Args:
+            limit: Maximum number of results to return (default: 10)
+            
+        Returns:
+            List of dictionaries containing analysis type and its frequency
+            Example: [{'analysis_type': 'quick_analysis', 'count': 120}, ...]
+        """
+        try:
+            with self.session_scope() as session:
+                popular_analyses = (
+                    session.query(
+                        UserActivity.activity_type,
+                        func.count(
+                            func.distinct(
+                                func.concat(
+                                    UserActivity.activity_type,
+                                    func.cast(UserActivity.timestamp, String)
+                                )
+                            )
+                        ).label('activity_count')
+                    )
+                    .group_by(UserActivity.activity_type)
+                    .order_by(desc('activity_count'))
+                    .limit(limit)
+                    .all()
+                )
+                
+                # Convert to list of dictionaries with meaningful names
+                return [
+                    {
+                        'analysis_type': activity.activity_type,
+                        'frequency': activity.activity_count,
+                        'percentage': round(
+                            (activity.activity_count / sum(a.activity_count for a in popular_analyses)) * 100, 
+                            2
+                        ) if popular_analyses else 0
+                    }
+                    for activity in popular_analyses
+                ]
+        except SQLAlchemyError as e:
+            logger.error(f"Error fetching popular analysis types: {str(e)}")
+            return []
+
+    def update_admin_role(self,admin_id,new_role,updated_by):
+        try:
+            with self.session_scope() as session:
+                admin = session.query(Admin).filter_by(id=admin_id).first()
+                if not admin:
+                    return None
+
+                old_role = admin.role
+                admin.role = new_role
+                
+                # Log admin activity
+                admin_activity = AdminActivity(
+                    admin_id=updated_by,
+                    activity_type="admin_role_change",
+                    target_user_id=admin_id,
+                    details={
+                        "old_role": old_role.value,
+                        "new_role": new_role.value
+                    }
+                )
+                session.add(admin_activity)
+                session.flush()
+                return self._clone_object(admin)
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating user role for admin {admin_id}: {str(e)}")
+            return None
+
+    def get_admin_activities(self, admin_id: Optional[int] = None, limit: int = 10) -> List[Dict]: 
+        """Retrieve admin activities, optionally filtered by admin_id."""
+        try:
+            with self.session_scope() as session:
+                query = session.query(AdminActivity)
+                if admin_id is not None:
+                    query = query.filter_by(admin_id=admin_id)
+                activities = query.order_by(desc(AdminActivity.timestamp)).limit(limit).all()
+                return self._clone_object_list(activities)
+        except SQLAlchemyError as e:
+            logger.error(f"Error fetching admin activities: {str(e)}")
             return []
