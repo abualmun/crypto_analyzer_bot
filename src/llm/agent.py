@@ -97,13 +97,13 @@ class CryptoAnalysisAgent:
             analysis = self.analyzer.analyze_coin(coin_id, days=days)
             
             # Send text analysis
-            formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
-            print(f"formatted_message: {formatted_message}")
+            # formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
+            print(f"formatted_message: {analysis}")
             # This is a placeholder - implement your actual analysis here
             analysis_prompt = self.formatter._t('analysis_prompt').format(
                coin_id=coin_id,
                timeframe=timeframe,
-               analysis=formatted_message
+               analysis=analysis
             ) 
             response = self.llm.invoke([HumanMessage(content=analysis_prompt)])
             return response.content
