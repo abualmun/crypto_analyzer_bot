@@ -300,8 +300,6 @@ class CallbackHandler:
         
         if action == "searched":
             searched_data = await self._get_most_searched_data()
-            
-              
             await query.edit_message_text(
                 f"{self.formatter._t('most_searched_stats')}\n{self.formatter.format_popular_results(
     [{"coin": r["coin"], "count": r["count"]} for r in searched_data],headers=("coin", "count"))}",
