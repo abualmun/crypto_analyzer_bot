@@ -159,51 +159,56 @@
   "help_troubleshooting_text":"فيما يلي بعض المشكلات الشائعة وكيفية حلها:\n\nرمز غير صالح: تأكد من أن الرمز الذي تستخدمه هو رمز صالح\nإطار زمني غير صالح: تأكد من تحديد إطار زمني صالح من الخيارات: 1d أو 1w أو 1m أو 3m.\nخطأ في التحليل: يرجى التأكد من أنك تستخدم الأمر والرمز الصحيحين.",
   "help_settings_text":"فيما يلي الإعدادات المتاحة للروبوت:\n\nاللغة: تبديل اللغة بين الإنجليزية والعربية.\nالإطار الزمني الافتراضي: تغيير الإطار الزمني الافتراضي الذي يستخدمه الروبوت.\nنوع المخطط الافتراضي: تحديد نوع المخطط الافتراضي.",
   "help_feedback_text":"نحن نسعى دائمًا لتحسين الروبوت، إذا كان لديك أي طلبات ميزات أو تقرير أخطاء، فيرجى الاتصال بالمطورين.",
-   "education_menu": "📚 قائمة التعليم",
-   "education_basic_concepts": "🌱 المفاهيم الأساسية",
+ "education_menu": "📚 قائمة التعليم",
+  "education_basic_concepts": "🌱 المفاهيم الأساسية",
   "education_technical_analysis": "📊 التحليل الفني",
-   "education_trading_strategies":"📈 استراتيجيات التداول",
+  "education_trading_strategies": "📈 استراتيجيات التداول",
   "education_defi_nfts": "🌐 DeFi و NFTs",
   "education_security": "🔒 الأمن",
-"education_topic_basic_concepts_introduction_title": "مقدمة إلى البلوكتشين",
-"education_topic_basic_concepts_introduction_text":"البلوك تشين عبارة عن دفتر حسابات مشترك وغير قابل للتغيير يسهل عملية تسجيل المعاملات وتتبع الأصول في شبكة الأعمال.",
-    "education_topic_basic_concepts_introduction_link_1_text": "تعلم المزيد حول البلوك تشين",
-  "education_topic_basic_concepts_introduction_link_1_url": "https://www.ibm.com/topics/blockchain",
-"education_topic_basic_concepts_cryptocurrencies_title":"فهم العملات المشفرة",
- "education_topic_basic_concepts_cryptocurrencies_text":"العملة المشفرة هي عملة رقمية أو افتراضية مؤمنة عن طريق التشفير، مما يجعل من المستحيل تزييفها أو إنفاقها المزدوج. تعتمد العديد من العملات المشفرة على شبكات لامركزية تعتمد على تقنية البلوك تشين.",
- "education_topic_basic_concepts_cryptocurrencies_link_1_text": "تعلم المزيد حول العملات المشفرة",
-    "education_topic_basic_concepts_cryptocurrencies_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency.asp",
- "education_topic_basic_concepts_wallets_title":"فهم محافظ العملات المشفرة",
- "education_topic_basic_concepts_wallets_text":"محفظة العملات المشفرة هي جهاز أو وسيط مادي أو برنامج أو خدمة تخزن المفاتيح العامة و/أو الخاصة لمعاملات العملات المشفرة.",
- "education_topic_basic_concepts_wallets_link_1_text": "تعلم المزيد حول محافظ العملات المشفرة",
-  "education_topic_basic_concepts_wallets_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency-wallet.asp",
- "education_topic_basic_concepts_exchanges_title":"فهم منصات تداول العملات المشفرة",
- "education_topic_basic_concepts_exchanges_text":"منصة تداول العملات المشفرة أو تبادل العملات الرقمية هي شركة تسمح للعملاء بتداول العملات المشفرة أو العملات الرقمية مقابل أصول أخرى، مثل الأموال الورقية التقليدية أو العملات الرقمية الأخرى.",
-    "education_topic_basic_concepts_exchanges_link_1_text": "تعلم المزيد حول منصات تداول العملات المشفرة",
-    "education_topic_basic_concepts_exchanges_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrencyexchange.asp",
-  "education_topic_technical_analysis_moving_averages_title":"المتوسطات المتحركة (MA)",
-   "education_topic_technical_analysis_moving_averages_text":"تعمل المتوسطات المتحركة على تسهيل بيانات الأسعار لتحديد الاتجاه. هناك أنواع مختلفة من المتوسطات المتحركة مثل SMA و EMA وما إلى ذلك.",
-   "education_topic_technical_analysis_rsi_indicator_title":"مؤشر القوة النسبية (RSI)",
-  "education_topic_technical_analysis_rsi_indicator_text":"مؤشر القوة النسبية (RSI) هو مؤشر زخم يقيس حجم تغيرات الأسعار الأخيرة لتقييم ظروف ذروة الشراء أو ذروة البيع في سعر السهم أو الأصول الأخرى.",
-    "education_topic_technical_analysis_rsi_indicator_link_1_text": "تعلم المزيد عن مؤشر القوة النسبية",
-  "education_topic_technical_analysis_rsi_indicator_link_1_url": "https://www.investopedia.com/terms/r/rsi.asp",
-  "education_topic_technical_analysis_macd_indicator_title":"التقارب والتباعد للمتوسطات المتحركة (MACD)",
-  "education_topic_technical_analysis_macd_indicator_text":"التقارب والتباعد للمتوسطات المتحركة (MACD) هو مؤشر زخم يتبع الاتجاه يوضح العلاقة بين متوسطين متحركين لسعر الأصل.",
-      "education_technical_analysis_macd_indicator_link_1_text": "تعلم المزيد حول MACD",
-  "education_technical_analysis_macd_indicator_link_1_url": "https://www.investopedia.com/terms/m/macd.asp",
-  "education_topic_technical_analysis_bollinger_bands_title":"بولينجر باندز",
-    "education_topic_technical_analysis_bollinger_bands_text":"بولينجر باندز هي نطاقات تقلب موضوعة أعلى وأسفل المتوسط المتحرك. يعتمد التقلب على الانحراف المعياري، الذي يتغير مع زيادة ونقصان التقلب.",
-     "education_topic_technical_analysis_support_resistance_title":"الدعم والمقاومة",
-    "education_topic_technical_analysis_support_resistance_text":"مستويات الدعم والمقاومة هي مناطق رئيسية يتوقع أن تتباطأ أو تنعكس فيها تحركات الأسعار. يشير الدعم إلى مستوى السعر حيث من المتوقع أن يمنع ضغط الشراء انخفاض السعر، بينما تشير المقاومة إلى مستوى السعر حيث من المتوقع أن يمنع ضغط البيع زيادة السعر.",
-   "education_topic_trading_strategies_day_trading_title":"التداول اليومي",
-  "education_topic_trading_strategies_day_trading_text":"التداول اليومي هو نوع من التداول حيث تقوم بشراء وبيع المراكز خلال نفس اليوم للاستفادة من تحركات الأسعار الصغيرة.",
-  "education_topic_trading_strategies_swing_trading_title":"التداول المتأرجح",
-    "education_topic_trading_strategies_swing_trading_text":"التداول المتأرجح هو استراتيجية تتضمن الاحتفاظ بالأصول لبضعة أيام أو أسابيع لتحقيق أرباح من تقلبات الأسعار المتوقعة.",
-  "education_defi_nfts_what_is_defi_title":"ما هو DeFi؟",
-     "education_topic_defi_nfts_what_is_defi_text":"تستخدم DeFi أو التمويل اللامركزي، تقنية البلوك تشين لتقديم الخدمات المالية دون وسطاء مركزيين مثل البنوك والمؤسسات المالية.",
-  "education_topic_defi_nfts_what_is_nft_title":"ما هي NFTs؟",
-  "education_topic_defi_nfts_what_is_nft_text":"الرمز غير القابل للاستبدال (NFT) هو أصل رقمي فريد يمثل مجموعة واسعة من العناصر المادية وغير المادية، مثل الأعمال الفنية والمقتنيات والعناصر داخل اللعبة.",
-   "education_security_scams_title":"عمليات الاحتيال الشائعة في العملات المشفرة",
-  "education_security_scams_text":"هناك العديد من عمليات الاحتيال في العملات المشفرة مثل التصيد الاحتيالي ومخططات بونزي وعمليات الضخ والتفريغ. قم دائمًا بإجراء البحث الخاص بك قبل أن تستثمر.",
- "back_education": "🔙 العودة إلى التعليم"
+
+  "education_topic_basic_concepts_title": "مقدمة في المفاهيم الأساسية",
+  "education_topic_basic_concepts_text": "تغطي أساسيات العملات المشفرة تقنية البلوكشين، والعملات الرقمية، والمحافظ، ومنصات التداول - اللبنات الأساسية للعملات المشفرة.",
+  "education_topic_basic_concepts_link_1_text": "تعلم المزيد عن أساسيات العملات المشفرة",
+  "education_topic_basic_concepts_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency.asp",
+
+  "education_topic_technical_analysis_title": "نظرة عامة على التحليل الفني",
+  "education_topic_technical_analysis_text": "يتضمن التحليل الفني في العملات المشفرة دراسة الرسوم البيانية للأسعار والأنماط والمؤشرات لاتخاذ قرارات التداول.",
+  "education_topic_technical_analysis_link_1_text": "تعلم المزيد عن التحليل الفني",
+  "education_topic_technical_analysis_link_1_url": "https://www.investopedia.com/terms/t/technicalanalysis.asp",
+
+  "education_topic_trading_strategies_title": "مقدمة في استراتيجيات التداول",
+  "education_topic_trading_strategies_text": "تساعد استراتيجيات التداول في إدارة المخاطر وتعظيم العوائد المحتملة في أسواق العملات المشفرة من خلال نهج منهجية.",
+  "education_topic_trading_strategies_link_1_text": "استكشف استراتيجيات التداول",
+  "education_topic_trading_strategies_link_1_url": "https://www.investopedia.com/terms/t/trading-strategy.asp",
+
+  "education_topic_defi_nfts_title": "شرح DeFi و NFTs",
+  "education_topic_defi_nfts_text": "يمثل التمويل اللامركزي (DeFi) والرموز غير القابلة للاستبدال (NFTs) تطبيقات مبتكرة لتقنية البلوكشين.",
+  "education_topic_defi_nfts_link_1_text": "فهم DeFi و NFTs",
+  "education_topic_defi_nfts_link_1_url": "https://ethereum.org/en/defi/",
+
+  "education_topic_security_title": "أساسيات أمن العملات المشفرة",
+  "education_topic_security_text": "يتضمن الأمن في العملات المشفرة حماية أصولك الرقمية من خلال الإدارة السليمة للمحفظة وفهم التهديدات الشائعة.",
+  "education_topic_security_link_1_text": "دليل أمن العملات المشفرة",
+  "education_topic_security_link_1_url": "https://www.blockchain.com/learning-portal/bitcoin-security",
+  "back_education": "🔙 العودة إلى التعليم" , 
+  "education_topic_introduction_blockchain_title": "مقدمة في البلوكشين",
+    "education_topic_introduction_blockchain_text": "البلوكشين هو تقنية دفتر أستاذ لامركزي وغير قابل للتغيير يدعم العملات المشفرة. يحتفظ بسجل آمن لجميع المعاملات عبر شبكة من أجهزة الكمبيوتر، مما يلغي الحاجة إلى الوسطاء التقليديين مثل البنوك.",
+    "education_topic_introduction_blockchain_link_1_text": "تعلم المزيد عن البلوكشين",
+    "education_topic_introduction_blockchain_link_1_url": "https://www.investopedia.com/terms/b/blockchain.asp",
+
+    "education_topic_introduction_crypto_title": "فهم العملات المشفرة",
+    "education_topic_introduction_crypto_text": "العملات المشفرة هي عملات رقمية أو افتراضية مؤمنة بواسطة التشفير. تعمل على تقنية البلوكشين، مما يجعل من المستحيل تقريباً تزويرها. بيتكوين، الذي تم إنشاؤه في عام 2009، كان أول عملة مشفرة ولا يزال الأكثر شهرة.",
+    "education_topic_introduction_crypto_link_1_text": "استكشف العملات المشفرة",
+    "education_topic_introduction_crypto_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency.asp",
+
+    "education_topic_introduction_wallets_title": "شرح محافظ العملات المشفرة",
+    "education_topic_introduction_wallets_text": "محافظ العملات المشفرة هي أدوات رقمية تخزن مفاتيحك الخاصة، مما يتيح لك إرسال واستلام العملات الرقمية. تأتي في أشكال مختلفة: محافظ الأجهزة لأقصى درجات الأمان، ومحافظ البرمجيات للراحة، والمحافظ الورقية للتخزين طويل المدى.",
+    "education_topic_introduction_wallets_link_1_text": "دليل المحافظ",
+    "education_topic_introduction_wallets_link_1_url": "https://www.investopedia.com/terms/b/bitcoin-wallet.asp",
+
+    "education_topic_introduction_exchanges_title": "منصات تداول العملات المشفرة",
+    "education_topic_introduction_exchanges_text": "منصات تداول العملات المشفرة هي منصات يمكنك من خلالها شراء وبيع وتداول العملات المشفرة. تأتي في نوعين رئيسيين: المنصات المركزية (CEX) التي تديرها الشركات، والمنصات اللامركزية (DEX) التي تعمل على العقود الذكية دون وسطاء.",
+    "education_topic_introduction_exchanges_link_1_text": "فهم منصات تداول العملات المشفرة",
+    "education_topic_introduction_exchanges_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency-exchange.asp"
+ 
 }

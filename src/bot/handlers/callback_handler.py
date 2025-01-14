@@ -548,38 +548,64 @@ class CallbackHandler:
              )
     
     async def _handle_education_selection(self, query, user_id):
-        """Handle education menu selections"""
-        sections = query.data.split("_")[1:]  # Get all parts after 'education'
-        section = "_".join(sections)  # Rejoin to handle multi-part sections
+        """Handle education-related selections"""
+        data = query.data
+        sections = data.split("_")[1:]  # Remove 'education' prefix
         
-        if section == "back":
-            await query.edit_message_text(
-                self.formatter._t('education_menu'),
-                reply_markup=self.keyboards.get_education_menu()
-            )
-            return
+        try:
+            # Handle back to education menu
+            if sections[0] == "back":
+                await query.edit_message_text(
+                    self.formatter._t('education_menu'),
+                    reply_markup=self.keyboards.get_education_menu()
+                )
+                return
 
-        # For each topic, find matching entries in JSON
-        topic_keys = []
-        for key in self.formatter.languages[self.formatter.current_language].keys():
-            if key.startswith(f"education_topic_{section}") and key.endswith("_title"):
-                base_key = key.rsplit('_title', 1)[0]
-                topic_keys.append(base_key)
+            # Handle main category selection (e.g., basic_concepts, technical_analysis)
+            if len(sections) == 1:
+                category = sections[0]
+                message_text = ""
+                
+                # Get all topics for this category
+                topic_keys = []
+                for key in self.formatter.languages[self.formatter.current_language].keys():
+                    if key.startswith(f"education_topic_{category}") and key.endswith("_title"):
+                        base_key = key.rsplit('_title', 1)[0]
+                        topic_keys.append(base_key)
 
-        message_text = ""
-        
-        # Build message for each matching topic
-        for base_key in topic_keys:
-            title = self.formatter._t(f"{base_key}_title")
-            text = self.formatter._t(f"{base_key}_text")
+                message_text = self.formatter._t(f'education_{category}')
+                
+                await query.edit_message_text(
+                    message_text,
+                    reply_markup=self.keyboards.get_education_sub_menu(category),
+                    parse_mode="Markdown"
+                )
+                return
+
+            # Handle specific topic selection
+            category = sections[0]
+            topic = "_".join(sections[1:])  # Handle multi-part topic names
             
-            message_text += f"*{title}*\n\n{text}\n\n"
-
-            # Check for associated links
+            # Build full message with title, content, and links
+            message_text = ""
+            
+            # Get title
+            title_key = f"education_topic_{category}_{topic}_title"
+            title = self.formatter._t(title_key)
+            if title:
+                message_text += f"*{title}*\n\n"
+            
+            # Get main content
+            text_key = f"education_topic_{category}_{topic}_text"
+            text = self.formatter._t(text_key)
+            if text:
+                message_text += f"{text}\n\n"
+            
+            # Add any associated links
             link_counter = 1
             while True:
-                link_text_key = f"{base_key}_link_{link_counter}_text"
-                link_url_key = f"{base_key}_link_{link_counter}_url"
+                link_text_key = f"education_topic_{category}_{topic}_link_{link_counter}_text"
+                link_url_key = f"education_topic_{category}_{topic}_link_{link_counter}_url"
                 
                 link_text = self.formatter._t(link_text_key)
                 link_url = self.formatter._t(link_url_key)
@@ -589,12 +615,23 @@ class CallbackHandler:
                     
                 message_text += f"[{link_text}]({link_url})\n"
                 link_counter += 1
+            
+            # Show the content with a back button
+            await query.edit_message_text(
+                message_text,
+                reply_markup=self.keyboards.get_education_sub_menu(category),
+                parse_mode="Markdown",
+                disable_web_page_preview=True
+            )
 
-        await query.edit_message_text(
-            message_text,
-            reply_markup=self.keyboards.get_education_sub_menu(),
-            parse_mode="Markdown"
-        )
+        except Exception as e:
+            print(f"Error in education handler: {str(e)}")
+            await query.edit_message_text(
+                f"{self.formatter._t('error')}: {str(e)}",
+                reply_markup=self.keyboards.get_education_menu()
+            )
+        finally:
+            await query.answer()
     # Existing helper methods: _get_help_intro_text, _get_help_commands_text
     # _get_help_navigation_text, _get_help_analysis_text, _get_help_charts_text
     # _get_help_news_text ,_get_help_agent_text , _get_help_troubleshooting_text,
