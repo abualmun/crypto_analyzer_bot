@@ -9,6 +9,12 @@ from telegram import Update
 
 import asyncio
 
+from src.services.database import AdminTypes, UserType
+from src.services.database_manager import DatabaseManager
+from src.utils.formatters import TelegramFormatter
+import logging
+logging.getLogger("httpx").setLevel(logging.WARNING)
+
 # Load environment variables
 load_dotenv()
 
@@ -20,22 +26,46 @@ analysis_handler = AnalysisHandler()
 callback_handler = CallbackHandler()
 message_handler = CustomMessageHandler()  # Updated class name
 keyboards = AnalysisKeyboards()
+formatter = TelegramFormatter()
+db = DatabaseManager()
 
 # Share user_states between handlers
 callback_handler.user_states = user_states
 message_handler.user_states = user_states
 
 async def start_command(update, context):
+    
+    user = db.get_user_by_telegram_id(update.message.from_user.id)
+    if not user :
+        db.create_user({'telegram_id':update.message.from_user.id})
+
     """Handle /start command"""
     welcome_text = (
-        "Welcome to CryptoAnalyst Bot! 🚀\n\n"
-        "I can help you analyze cryptocurrencies with technical analysis "
-        "and charts. Select an option below to get started:\n"
-        "Or enter your text and let the agent help you out 🤖!"
+        """Welcome to CryptoAnalyst Bot! 🚀\n\n
+        I can help you analyze cryptocurrencies with technical analysis 
+        and charts. Select an option below to get started:\n
+        Or enter your text and let the agent help you out 🤖!"""
     )
     await update.message.reply_text(
-        welcome_text,
+        formatter._t('welcome_text'),
         reply_markup=keyboards.get_main_menu()
+    )  
+    
+
+async def admin_command(update,context):
+    # admin = db.create_admin({'user_id':update.message.from_user.id,'role':AdminTypes.MASTER,'created_by':update.message.from_user.id})
+    admin = db.get_admin_by_user_id(update.message.from_user.id)
+    
+    if admin['role'] == AdminTypes.MASTER:
+        print('master')
+    welcome_text = (
+            "Welcome to CryptoAnalyst Bot Admin Panel\n\n"
+            "How can I help you? "
+            "Select an option below\n"
+        )
+    await update.message.reply_text(
+        welcome_text,
+        reply_markup=keyboards.get_admin_menu()
     )
 
 async def progress_bar(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -58,16 +88,18 @@ async def progress_bar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Final message when complete
     await message.edit_text("✅ Loading Complete!")
 
+async def print_id(update,context):
+    await update.message.reply_text(update.message.from_user.id)
 # Create the bot application
-async def main():
-    application = (
-        ApplicationBuilder()
-        .token("YOUR_TELEGRAM_BOT_TOKEN")
-        .build()
-    )
+# async def main():
+#     application = (
+#         ApplicationBuilder()
+#         .token("YOUR_TELEGRAM_BOT_TOKEN")
+#         .build()
+#     )
 
-    # Start the bot
-    await application.run_polling()
+#     # Start the bot
+#     await application.run_polling()
 
 
 def main():
@@ -81,6 +113,9 @@ def main():
     application.add_handler(CommandHandler('quick', analysis_handler.cmd_quick))
     application.add_handler(CommandHandler('news', analysis_handler.cmd_news))
     application.add_handler(CommandHandler('chart', analysis_handler.cmd_chart))
+    application.add_handler(CommandHandler('admin', admin_command))
+# DEBUGGING
+    application.add_handler(CommandHandler('id', print_id))
     
     # Add the command handler
     application.add_handler(CommandHandler("progress", progress_bar))

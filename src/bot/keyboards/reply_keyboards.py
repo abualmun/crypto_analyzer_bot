@@ -106,6 +106,112 @@ class AnalysisKeyboards:
         ]
         return InlineKeyboardMarkup(keyboard)
     
+    def get_education_sub_menu(self):
+         """Create education sub-menu keyboard"""
+         keyboard = [
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_education")]
+        ]
+         return InlineKeyboardMarkup(keyboard)
+
+    def get_admin_menu(self):
+        """Create admin menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('users_tracking'), callback_data="admin_tracking"),
+                InlineKeyboardButton(text=self.formatter._t('manage_users'), callback_data="admin_users"),
+                InlineKeyboardButton(text=self.formatter._t('manage_admins'), callback_data="admin_admins")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_user_tracking_menu(self):
+        """Create user tracking menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('most_searched'), callback_data="tracking_searched"),
+                InlineKeyboardButton(text=self.formatter._t('popular_analysis'), callback_data="tracking_analysis"),
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_users_managing_menu(self):
+        """Create users managing menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('change_subscription'), callback_data="users_subscribe"),
+                InlineKeyboardButton(text=self.formatter._t('ban_user'), callback_data="users_ban"),
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_user_ban_menu(self):
+        """Create users ban menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('yes'), callback_data="toggle_ban")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]  
+        return InlineKeyboardMarkup(keyboard)  
+
+    def get_change_user_subscrption_menu(self):
+        """Create users subscription change menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('guest'), callback_data=f"change_user_subscrption_guest"),
+                InlineKeyboardButton(text=self.formatter._t('premium'), callback_data=f"change_user_subscrption_premium")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]  
+        return InlineKeyboardMarkup(keyboard)  
+
+    def get_admins_managing_menu(self):
+        """Create admins managing menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('new_admin'), callback_data="adminsconf_new"),
+                InlineKeyboardButton(text=self.formatter._t('change_role'), callback_data="adminsconf_change"),
+                InlineKeyboardButton(text=self.formatter._t('delete_admin'), callback_data="adminsconf_delete"),
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+
+    def get_admin_remove_menu(self):
+        """Create admin remove menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('yes'), callback_data="remove_admin")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]  
+        return InlineKeyboardMarkup(keyboard) 
+
+    def get_admin_add_menu(self):
+        """Create admin add menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('yes'), callback_data="add_admin")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]  
+        return InlineKeyboardMarkup(keyboard)   
+
+    def get_change_admin_role_menu(self):
+        """Create admin role change menu keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('master'), callback_data=f"change_admin_master"),
+                InlineKeyboardButton(text=self.formatter._t('normal'), callback_data=f"change_admin_normal"),
+                InlineKeyboardButton(text=self.formatter._t('watcher'), callback_data=f"change_admin_watcher")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
+        ]  
+        return InlineKeyboardMarkup(keyboard)
+
     def get_education_sub_menu(self, category_identifier):
         """Create education sub-menu keyboard for a specific category"""
         keyboard = []

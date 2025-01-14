@@ -2,6 +2,8 @@ from src.bot import keyboards
 from src.bot.keyboards import reply_keyboards
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+
+from src.services.database_manager import DatabaseManager
 from ...analysis.technical import TechnicalAnalyzer
 from ...utils.formatters import TelegramFormatter
 from ...utils.news_formatters import NewsFormatter
@@ -23,6 +25,7 @@ class AnalysisHandler:
         self.news_fetcher = CryptoNewsFetcher(os.getenv("CRYPTO_NEWS_TOKEN"))
         self.news_formatter = NewsFormatter()
         self.keyboards = reply_keyboards.AnalysisKeyboards()
+        self.db_manager = DatabaseManager()
         # Default timeframes
         self.timeframes = {
             '1d': 1,
@@ -123,6 +126,16 @@ class AnalysisHandler:
         loading_message = update.message,
         intro_text=formatted_message
     )
+            # log the activities in the database
+            self.db_manager.log_user_activity({
+                'user_id':update.message.from_user.id,
+                'coin_id':coin_id,
+                'activity_type':'full',
+                'timestamp':days}) 
+            self.db_manager.log_user_search({
+                'user_id':update.message.from_user.id,
+                'coin_id':coin_id,}) 
+            
         except Exception as e:
             print(str(e))
             # await loading_message.edit_text(
@@ -173,6 +186,16 @@ class AnalysisHandler:
         loading_message=update.message,
         intro_text=formatted_message
     )
+            # log the activities in the database
+
+            self.db_manager.log_user_activity({
+                'user_id':update.message.from_user.id,
+                'coin_id':coin_id,
+                'activity_type':'price',
+                'timestamp':1})
+            self.db_manager.log_user_search({
+                'user_id':update.message.from_user.id,
+                'coin_id':coin_id,})
         except Exception as e:
             await loading_message.edit_text(
                 self.formatter.format_error_message(str(e))
@@ -213,6 +236,16 @@ class AnalysisHandler:
                 days,
                 loading_message
             )
+            # log the activities in the database
+            self.db_manager.log_user_activity({
+                'user_id':update.message.from_user.id,
+                'coin_id':coin_id,
+                'activity_type':chart_type,
+                'timestamp':days})
+            
+            self.db_manager.log_user_search({
+                'user_id':update.message.from_user.id,
+                'coin_id':coin_id,})
 
         except Exception as e:
             await loading_message.edit_text(
@@ -306,6 +339,7 @@ class AnalysisHandler:
                         charts_to_include=['price', 'moving_averages', 'macd', 'rsi', 'volume'],
                         intro_text=intro_text
                     )
+                
                 else:
                     await loading_message.edit_text(self.formatter._t('invalid_chart_type'))
                     return
@@ -326,57 +360,3 @@ class AnalysisHandler:
             return
         except Exception as e:
             await loading_message.edit_text(f"{self.formatter._t('error_generating_chart')}: {str(e)}")
-
-    # async def _send_analysis_charts(self, update: Update, analysis: dict, coin_id: str,message: str):
-    #     """Generate and send multiple charts for full analysis"""
-    #     coin_id = DataProcessor.symbol_mapping[coin_id]
-    #     try:
-    #         message = 'yo'
-    #         df = self.data_processor.get_ohlcv_data(coin_id)
-    #         filename='selected_charts.pdf'
-    #         # Generate charts in temp files
-    #         with tempfile.TemporaryDirectory() as temp_dir:
-    #             # Price and MA chart
-    #             ma_data = analysis['trend_indicators']['moving_averages']
-                
-                
-    #             # MACD chart
-    #             macd_data = analysis['trend_indicators']['macd']
-                
-    #             # RSI chart
-    #             rsi_data = analysis['momentum_indicators']['rsi']['all']
-                
-
-    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, ma_data=ma_data, macd_data=macd_data, rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages','rsi', 'macd'],labels=[message,'',''])
-    #             # Send charts
-    #             if os.path.exists(temp_dir+filename):
-    #                 await update.message.reply_document(
-    #                 document=open(temp_dir+filename, 'rb'),
-    #                 filename="Analysis_Charts.pdf"
-    #         )
-
-    #     except Exception as e:
-    #         await update.message.reply_text(
-    #             f"⚠️ Error generating charts: {str(e)}"
-    #         )
-
-    # async def _send_price_chart(self, update: Update, analysis: dict, coin_id: str,message:str):
-    #     """Send basic price chart for quick analysis"""
-    #     coin_id = DataProcessor.symbol_mapping[coin_id]
-
-    #     try:
-    #         df = self.data_processor.get_ohlcv_data(coin_id)
-    #         filename='Price_Charts.pdf'
-    #         with tempfile.TemporaryDirectory() as temp_dir:                
-    #             await save_charts_to_pdf(filename=temp_dir+filename, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'],labels=[message])
-    #             # Send charts
-    #             if os.path.exists(temp_dir+filename):
-    #                 await update.message.reply_document(
-    #                 document=open(temp_dir+filename, 'rb'),
-    #                 filename="Price_Charts.pdf"
-    #         )
-
-    #     except Exception as e:
-    #         await update.message.reply_text(
-    #             f"⚠️ Error generating price chart: {str(e)}"
-    #         )

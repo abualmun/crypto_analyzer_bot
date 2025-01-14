@@ -1,19 +1,19 @@
-# python-telegram-bot==20.4
-# python-dotenv==1.0
-# pycoingecko==3.1.0
-# pandas==2.0.0
-# numpy==1.23.0
-# mplfinance
-# SQLAlchemy==2.0.36
-# matplotlib
-# reportlab
-# #emoji
-# praw
-# textblob
-# datapane
-# plotly
-# emojiasyncio
-# tweepy
+python-telegram-bot==20.4
+python-dotenv==1.0
+pycoingecko==3.1.0
+pandas==2.0.0
+numpy==1.23.0
+mplfinance
+SQLAlchemy==2.0.36
+matplotlib
+reportlab
+emoji
+praw
+textblob
+datapane
+plotly
+emojiasyncio
+tweepy
 google-generativeai
 langchain
 langchain-google-genai
