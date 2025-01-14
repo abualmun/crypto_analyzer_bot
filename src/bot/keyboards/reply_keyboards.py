@@ -101,9 +101,10 @@ class AnalysisKeyboards:
         keyboard = [
             [
                 InlineKeyboardButton(text=self.formatter._t('users_tracking'), callback_data="admin_tracking"),
-                InlineKeyboardButton(text=self.formatter._t('manage_users'), callback_data="admin_users"),
-                InlineKeyboardButton(text=self.formatter._t('manage_admins'), callback_data="admin_admins")
-            ],
+                InlineKeyboardButton(text=self.formatter._t('manage_users'), callback_data="admin_users")],
+            [
+                InlineKeyboardButton(text=self.formatter._t('manage_admins'), callback_data="admin_admins")],
+            
             [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
         ]
         return InlineKeyboardMarkup(keyboard)

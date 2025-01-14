@@ -38,7 +38,7 @@ async def start_command(update, context):
     user = db.get_user_by_telegram_id(update.message.from_user.id)
     if not user :
         db.create_user({'telegram_id':update.message.from_user.id})
-
+    formatter.set_language(user['language'])
     """Handle /start command"""
     welcome_text = (
         """Welcome to CryptoAnalyst Bot! 🚀\n\n
@@ -54,19 +54,28 @@ async def start_command(update, context):
 
 async def admin_command(update,context):
     # admin = db.create_admin({'user_id':update.message.from_user.id,'role':AdminTypes.MASTER,'created_by':update.message.from_user.id})
-    admin = db.get_admin_by_user_id(update.message.from_user.id)
-    
-    if admin['role'] == AdminTypes.MASTER:
-        print('master')
-    welcome_text = (
-            "Welcome to CryptoAnalyst Bot Admin Panel\n\n"
-            "How can I help you? "
-            "Select an option below\n"
-        )
-    await update.message.reply_text(
-        welcome_text,
-        reply_markup=keyboards.get_admin_menu()
-    )
+    user = db.get_user_by_telegram_id(update.message.from_user.id)
+    try:
+        admin = db.get_admin_by_user_id(user["telegram_id"])
+        formatter.set_language(user['language'])
+
+        if admin:
+            welcome_text = (
+                    "Welcome to CryptoAnalyst Bot Admin Panel\n\n"
+                    "How can I help you? "
+                    "Select an option below\n"
+                )
+            await update.message.reply_text(
+                welcome_text,
+                reply_markup=keyboards.get_admin_menu()
+            )
+        else:
+            await update.message.reply_text(
+                formatter._t("not_authorized")
+            )
+    except Exception as e:
+        print(e)
+        pass
 
 async def progress_bar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Simulates a loading progress bar in the bot."""

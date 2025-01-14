@@ -15,7 +15,6 @@ class CallbackHandler:
         self.analysis_handler = AnalysisHandler()
         self.formatter = TelegramFormatter()  # Add formatter
         self.db_manager = DatabaseManager()
-        self.user_states = {'language':'en'}  # Store user states
 
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle callback queries from inline keyboards"""
@@ -187,10 +186,8 @@ class CallbackHandler:
             try:    
                 if 'language' not in context.user_data:
                     context.user_data['language'] = 'en'
-                print("inside the if")
                 new_lang = 'en' if context.user_data['language'] == 'ar' else 'ar'
                 if self.db_manager.update_user_language(user_id=user_id,new_lang=new_lang):
-                    print("inside the if")
                     context.user_data['language'] = new_lang
 
                     self.formatter.set_language(new_lang)
@@ -267,7 +264,6 @@ class CallbackHandler:
         admin_role = self.db_manager.get_admin_by_user_id(user_id=user_id)['role']
 
         if action == "tracking":
-            print("i gocha")
             await query.edit_message_text(
                 self.formatter._t('select_tracking_option'),
                 reply_markup=self.keyboards.get_user_tracking_menu()
