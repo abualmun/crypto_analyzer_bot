@@ -106,12 +106,6 @@ class AnalysisKeyboards:
         ]
         return InlineKeyboardMarkup(keyboard)
     
-    def get_education_sub_menu(self):
-         """Create education sub-menu keyboard"""
-         keyboard = [
-            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_education")]
-        ]
-         return InlineKeyboardMarkup(keyboard)
 
     def get_admin_menu(self):
         """Create admin menu keyboard"""
