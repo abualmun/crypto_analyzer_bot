@@ -173,8 +173,8 @@ class AnalysisKeyboards:
         keyboard = [
             [
                 InlineKeyboardButton(text=self.formatter._t('new_admin'), callback_data="adminsconf_new"),
-                InlineKeyboardButton(text=self.formatter._t('change_role'), callback_data="adminsconf_change"),
-                InlineKeyboardButton(text=self.formatter._t('delete_admin'), callback_data="adminsconf_delete"),
+                InlineKeyboardButton(text=self.formatter._t('change_role'), callback_data="adminsconf_change")],
+                [InlineKeyboardButton(text=self.formatter._t('delete_admin'), callback_data="adminsconf_delete"),
             ],
             [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_admin")]
         ]

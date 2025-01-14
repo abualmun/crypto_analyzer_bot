@@ -1,6 +1,7 @@
-from typing import Dict, List
+from typing import Dict, List,Tuple
 import json
 import os
+
 
 class TelegramFormatter:
     _instance = None
@@ -799,6 +800,27 @@ class TelegramFormatter:
             return "❄️ Oversold"
         else:
             return "➖ Neutral"
+    
+    def format_popular_results(self,results: List[Dict], headers: Tuple[str, str]) -> str:
+        """
+        Format a list of dictionaries for display as a table.
+
+        Args:
+            results: List of dictionaries containing data to format.
+            headers: Tuple containing header names (key_1, key_2).
+
+        Returns:
+            Formatted string as a table.
+        """
+        key1, key2 = headers  # Extract dictionary keys
+        header = f"{key1:<15} {key2:<10}\n{'-' * 25}"
+
+        # Rows formatting
+        rows = "\n".join(f"{item[key1]:<15} {item[key2]:<10}" for item in results)
+        
+        return f"{header}\n{rows}"
+
+
 
 
     

@@ -7,6 +7,8 @@ from typing import Dict, Optional
 from dotenv import load_dotenv
 import sys
 import os
+
+from src.services.database_manager import DatabaseManager
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 from src.analysis.technical import TechnicalAnalyzer
 from src.utils.formatters import TelegramFormatter
@@ -27,6 +29,7 @@ class CryptoAnalysisAgent:
         self.data_processor = DataProcessor()
         self.news_fetcher = CryptoNewsFetcher(os.getenv("CRYPTO_NEWS_TOKEN"))
         self.news_formatter = NewsFormatter()
+        self.db_manager = DatabaseManager()
 
         self.timeframes = {
             '1d': 1,
@@ -95,7 +98,11 @@ class CryptoAnalysisAgent:
             # Get analysis
             days = self.timeframes[timeframe]
             analysis = self.analyzer.analyze_coin(coin_id, days=days)
-            
+             self.db_manager.log_user_activity({
+                'user_id':user_id,
+                'coin_id':coin_id,
+                'activity_type':'full',
+                'timestamp':days})             
             # Send text analysis
             formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
             print(f"formatted_message: {formatted_message}")

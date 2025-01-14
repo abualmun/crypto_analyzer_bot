@@ -101,6 +101,7 @@ async def main():
 
 
 def main():
+ 
     """Main function to run the bot"""
     # Create application
     application = Application.builder().token(os.getenv("TELEGRAM_BOT_TOKEN")).build()

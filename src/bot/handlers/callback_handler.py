@@ -298,15 +298,18 @@ class CallbackHandler:
         
         if action == "searched":
             searched_data = await self._get_most_searched_data()
+            
+              
             await query.edit_message_text(
-                f"{self.formatter._t('most_searched_stats')}\n{searched_data}",
+                f"{self.formatter._t('most_searched_stats')}\n{self.formatter.format_popular_results(
+    [{"coin": r["search_term"], "count": r["count"]} for r in searched_data],headers=("coin", "count"))}",
                 reply_markup=self.keyboards.get_user_tracking_menu()
             )
             
         elif action == "analysis":
             analysis_data = await self._get_popular_analysis_data()
             await query.edit_message_text(
-                f"{self.formatter._t('popular_analysis_stats')}\n{analysis_data}",
+                f"{self.formatter._t('popular_analysis_stats')}\n{self.formatter.format_popular_results(analysis_data,('analysis','count'))}",
                 reply_markup=self.keyboards.get_user_tracking_menu()
             )
 
