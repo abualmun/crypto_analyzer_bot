@@ -187,10 +187,10 @@ class CallbackHandler:
             try:    
                 if 'language' not in context.user_data:
                     context.user_data['language'] = 'en'
-
+                print("inside the if")
                 new_lang = 'en' if context.user_data['language'] == 'ar' else 'ar'
                 if self.db_manager.update_user_language(user_id=user_id,new_lang=new_lang):
-
+                    print("inside the if")
                     context.user_data['language'] = new_lang
 
                     self.formatter.set_language(new_lang)

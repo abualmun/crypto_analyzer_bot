@@ -349,15 +349,18 @@ class DatabaseManager:
         """Update user's language."""
         try:
             with self.session_scope() as session:
-                user = session.query(User).filter_by(id=user_id).first()
+                print(user_id)
+                user = session.query(User).filter_by(telegram_id=user_id).first()
+                print(user)
                 if not user:
-                    return None
+                    return False
 
                 user.user_type = new_lang
 
                 session.flush()
                 return True
         except SQLAlchemyError as e:
+            print(str(e))
             logger.error(f"Error updating user language {user_id}: {str(e)}")
             return False
 
@@ -467,8 +470,6 @@ class DatabaseManager:
                 admin = session.query(Admin).filter_by(
                     user_id=user_id,
                 ).first()
-                print('aaaaaaaaaaaaaaaaaaaaaaaaa')
-                print(admin) 
                 return self._clone_object(admin)
         except SQLAlchemyError as e:
             logger.error(f"Error fetching admin for user {user_id}: {str(e)}")

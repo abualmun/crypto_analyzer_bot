@@ -98,11 +98,11 @@ class CryptoAnalysisAgent:
             # Get analysis
             days = self.timeframes[timeframe]
             analysis = self.analyzer.analyze_coin(coin_id, days=days)
-             self.db_manager.log_user_activity({
-                'user_id':user_id,
-                'coin_id':coin_id,
-                'activity_type':'full',
-                'timestamp':days})             
+            #  self.db_manager.log_user_activity({
+            #     'user_id':user_id,
+            #     'coin_id':coin_id,
+            #     'activity_type':'full',
+            #     'timestamp':days})             
             # Send text analysis
             # formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
             print(f"formatted_message: {analysis}")
