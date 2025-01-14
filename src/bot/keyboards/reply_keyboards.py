@@ -19,7 +19,7 @@ class AnalysisKeyboards:
             ]
             ,
             [
-                InlineKeyboardButton(text=self.formatter._t('education_menu'), callback_data="menu_education")
+                InlineKeyboardButton(text=self.formatter._t('education_button'), callback_data="menu_education")
             ]
         ]
         return InlineKeyboardMarkup(keyboard)
@@ -95,20 +95,31 @@ class AnalysisKeyboards:
         return InlineKeyboardMarkup(keyboard)
     
     def get_education_menu(self):
-         """Create education menu keyboard"""
-         keyboard = [
-              [InlineKeyboardButton(text=self.formatter._t('education_basic_concepts'), callback_data="education_basic_concepts")],
-                [InlineKeyboardButton(text=self.formatter._t('education_technical_analysis'), callback_data="education_technical_analysis")],
-               [InlineKeyboardButton(text=self.formatter._t('education_trading_strategies'), callback_data="education_trading_strategies")],
-                [InlineKeyboardButton(text=self.formatter._t('education_defi_nfts'), callback_data="education_defi_nfts")],
-                 [InlineKeyboardButton(text=self.formatter._t('education_security'), callback_data="education_security")],
-               [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
+        """Create education menu keyboard"""
+        keyboard = [
+            [InlineKeyboardButton(text=self.formatter._t('education_basic_concepts'), callback_data="education_basic_concepts")],
+            [InlineKeyboardButton(text=self.formatter._t('education_technical_analysis'), callback_data="education_technical_analysis")],
+            [InlineKeyboardButton(text=self.formatter._t('education_trading_strategies'), callback_data="education_trading_strategies")],
+             [InlineKeyboardButton(text=self.formatter._t('education_defi_nfts'), callback_data="education_defi_nfts")],
+              [InlineKeyboardButton(text=self.formatter._t('education_security'), callback_data="education_security")],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
         ]
-         return InlineKeyboardMarkup(keyboard)
+        return InlineKeyboardMarkup(keyboard)
     
-    def get_education_sub_menu(self):
-         """Create education sub-menu keyboard"""
-         keyboard = [
-            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_education")]
-        ]
-         return InlineKeyboardMarkup(keyboard)
+    def get_education_sub_menu(self, category_identifier):
+        """Create education sub-menu keyboard for a specific category"""
+        keyboard = []
+        
+        # Get all available keys that start with "education_[category_identifier]_" and ends with `_title`
+        all_keys = self.formatter.languages[self.formatter.current_language].keys()
+        module_keys = [key for key in all_keys if key.startswith(f"education_{category_identifier}_") and key.endswith("_title")]
+        
+        for key in module_keys:
+            module_title = self.formatter._t(key)
+            module_id = key.replace("_title", "") # get the full key up to the title
+            keyboard.append([InlineKeyboardButton(text=module_title, callback_data=module_id)])
+        
+        # Add the back button
+        keyboard.append([InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_education")])
+        
+        return InlineKeyboardMarkup(keyboard)
