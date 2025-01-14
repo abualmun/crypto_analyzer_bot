@@ -345,15 +345,15 @@ class DatabaseManager:
             logger.error(f"Error updating user type for user {user_id}: {str(e)}")
             return None
 
-    def update_user_language(self, user_id: int, new_lang: UserType) -> bool:
+    def update_user_language(self, user_id: int, new_lang: String) -> bool:
         """Update user's language."""
         try:
             with self.session_scope() as session:
-                user = session.query(User).filter_by(id=user_id).first()
+                user = session.query(User).filter_by(telegram_id=user_id).first()
                 if not user:
-                    return None
+                    return False
 
-                user.user_type = new_lang
+                user.language = new_lang
 
                 session.flush()
                 return True
@@ -403,10 +403,8 @@ class DatabaseManager:
                 ).first()
                 
                 if existing_admin:
-                    print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
                     logger.error(f"User {admin_data['user_id']} is already an admin")
                     return None
-                print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
                 admin = Admin(
                     user_id=admin_data['user_id'],
                     role=admin_data['role'],
@@ -467,8 +465,6 @@ class DatabaseManager:
                 admin = session.query(Admin).filter_by(
                     user_id=user_id,
                 ).first()
-                print('aaaaaaaaaaaaaaaaaaaaaaaaa')
-                print(admin) 
                 return self._clone_object(admin)
         except SQLAlchemyError as e:
             logger.error(f"Error fetching admin for user {user_id}: {str(e)}")
