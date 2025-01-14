@@ -132,10 +132,7 @@ class AnalysisHandler:
                 'coin_id':coin_id,
                 'activity_type':'full',
                 'timestamp':days}) 
-            self.db_manager.log_user_search({
-                'user_id':update.message.from_user.id,
-                'coin_id':coin_id,}) 
-            
+    
         except Exception as e:
             print(str(e))
             # await loading_message.edit_text(
@@ -193,9 +190,6 @@ class AnalysisHandler:
                 'coin_id':coin_id,
                 'activity_type':'price',
                 'timestamp':1})
-            self.db_manager.log_user_search({
-                'user_id':update.message.from_user.id,
-                'coin_id':coin_id,})
         except Exception as e:
             await loading_message.edit_text(
                 self.formatter.format_error_message(str(e))
@@ -243,10 +237,6 @@ class AnalysisHandler:
                 'activity_type':chart_type,
                 'timestamp':days})
             
-            self.db_manager.log_user_search({
-                'user_id':update.message.from_user.id,
-                'coin_id':coin_id,})
-
         except Exception as e:
             await loading_message.edit_text(
                 self.formatter.format_error_message(str(e))

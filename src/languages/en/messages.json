@@ -291,7 +291,11 @@
     "education_topic_introduction_exchanges_title": "Cryptocurrency Exchanges",
     "education_topic_introduction_exchanges_text": "Crypto exchanges are platforms where you can buy, sell, and trade cryptocurrencies. They come in two main types: centralized exchanges (CEX) operated by companies, and decentralized exchanges (DEX) running on smart contracts without intermediaries.",
     "education_topic_introduction_exchanges_link_1_text": "Understanding Crypto Exchanges",
-    "education_topic_introduction_exchanges_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency-exchange.asp"
- 
+    "education_topic_introduction_exchanges_link_1_url": "https://www.investopedia.com/terms/c/cryptocurrency-exchange.asp",
+    "analysis_type":"Analysis type",
+    "count":"Count",
+    "coin":"Coin"
+    
+  
 
 }

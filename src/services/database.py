@@ -107,18 +107,6 @@ class User(Base):
     
     # Relationships
     activities = relationship("UserActivity", back_populates="user", cascade="all, delete-orphan")
-    searches = relationship("UserSearchHistory", back_populates="user", cascade="all, delete-orphan")
-
-class UserSearchHistory(Base):
-    __tablename__ = 'user_searches'
-    
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    coin_id = Column(String, ForeignKey('coins.id', ondelete='CASCADE'), nullable=False)
-    search_date = Column(DateTime, default=datetime.utcnow)
-    
-    # Relationship
-    user = relationship("User", back_populates="searches")
 
 class UserActivity(Base):
     __tablename__ = 'user_activities'
@@ -127,7 +115,7 @@ class UserActivity(Base):
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     coin_id = Column(String, ForeignKey('coins.id', ondelete='CASCADE'), nullable=False)
     activity_type = Column(String, nullable=False)  # 'search', 'price_check', 'analysis', etc.
-    timestamp = Column(DateTime, default=datetime.utcnow)
+    timestamp = Column(Integer,nullable=False)
     details = Column(JSON)  # For storing any additional activity data
     
     # Relationship

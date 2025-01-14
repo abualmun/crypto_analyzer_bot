@@ -813,7 +813,7 @@ class TelegramFormatter:
             Formatted string as a table.
         """
         key1, key2 = headers  # Extract dictionary keys
-        header = f"{key1:<15} {key2:<10}\n{'-' * 25}"
+        header = f"{self._t(key1):<15} {self._t(key2):<10}\n{'-' * 25}"
 
         # Rows formatting
         rows = "\n".join(f"{item[key1]:<15} {item[key2]:<10}" for item in results)

@@ -304,14 +304,14 @@ class CallbackHandler:
               
             await query.edit_message_text(
                 f"{self.formatter._t('most_searched_stats')}\n{self.formatter.format_popular_results(
-    [{"coin": r["search_term"], "count": r["count"]} for r in searched_data],headers=("coin", "count"))}",
+    [{"coin": r["coin"], "count": r["count"]} for r in searched_data],headers=("coin", "count"))}",
                 reply_markup=self.keyboards.get_user_tracking_menu()
             )
             
         elif action == "analysis":
             analysis_data = await self._get_popular_analysis_data()
             await query.edit_message_text(
-                f"{self.formatter._t('popular_analysis_stats')}\n{self.formatter.format_popular_results(analysis_data,('analysis','count'))}",
+                f"{self.formatter._t('popular_analysis_stats')}\n{self.formatter.format_popular_results(analysis_data,('analysis_type','count'))}",
                 reply_markup=self.keyboards.get_user_tracking_menu()
             )
 
@@ -353,12 +353,16 @@ class CallbackHandler:
 
     async def _get_most_searched_data(self):
         try:
-            return self.db_manager.get_most_popular_searches(10)
+            print(self.db_manager.get_most_popular_coins(10))
+            return self.db_manager.get_most_popular_coins(10)
+            
         except Exception as e:
             return str(e)
 
     async def _get_popular_analysis_data(self):
         try:
+            print(self.db_manager.get_most_popular_analysis_types(10))
+
             return self.db_manager.get_most_popular_analysis_types(10)
         except Exception as e:
             return await str(e)

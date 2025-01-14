@@ -7,7 +7,7 @@ from sqlalchemy.orm.exc import DetachedInstanceError
 from contextlib import contextmanager
 import logging
 from typing import List, Dict, Optional, Union, Tuple
-from .database import User, UserType, UserSearchHistory, UserActivity, Admin, AdminActivity, Base, Coin, CoinPrice, OHLC, TrendingCoin
+from .database import User, UserType, UserActivity, Admin, AdminActivity, Base, Coin, CoinPrice, OHLC, TrendingCoin
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -361,18 +361,6 @@ class DatabaseManager:
             logger.error(f"Error updating user language {user_id}: {str(e)}")
             return False
 
-    def log_user_search(self, search_data: Dict) -> Optional[Dict]:
-        """Log a user's search activity."""
-        try:
-            with self.session_scope() as session:
-                search = UserSearchHistory(**search_data)
-                session.add(search)
-                session.flush()
-                return self._clone_object(search)
-        except SQLAlchemyError as e:
-            logger.error(f"Error logging search for user {search_data.get('user_id')}: {str(e)}")
-            return None
-
     def log_user_activity(self, activity_data: Dict) -> Optional[Dict]:
         """Log a user's activity."""
         try:
@@ -470,7 +458,7 @@ class DatabaseManager:
             logger.error(f"Error fetching admin for user {user_id}: {str(e)}")
             return None
 
-    def get_most_popular_searches(self, limit: int = 10) -> List[Dict]:
+    def get_most_popular_coins(self, limit: int = 10) -> List[Dict]:
         """
         Retrieve the most popular searches across all users.
         
@@ -483,12 +471,12 @@ class DatabaseManager:
         """
         try:
             with self.session_scope() as session:
-                popular_searches = (
+                popular_coins = (
                     session.query(
-                        UserSearchHistory.coin_id,
-                        func.count(UserSearchHistory.coin_id).label('search_count')
+                        UserActivity.coin_id,
+                        func.count(UserActivity.coin_id).label('search_count')
                     )
-                    .group_by(UserSearchHistory.coin_id)
+                    .group_by(UserActivity.coin_id)
                     .order_by(desc('search_count'))
                     .limit(limit)
                     .all()
@@ -497,10 +485,10 @@ class DatabaseManager:
                 # Convert to list of dictionaries
                 return [
                     {
-                        'search_term': search.coin_id,
+                        'coin': search.coin_id,
                         'count': search.search_count
                     }
-                    for search in popular_searches
+                    for search in popular_coins
                 ]
         except SQLAlchemyError as e:
             logger.error(f"Error fetching popular searches: {str(e)}")
@@ -542,11 +530,7 @@ class DatabaseManager:
                 return [
                     {
                         'analysis_type': activity.activity_type,
-                        'frequency': activity.activity_count,
-                        'percentage': round(
-                            (activity.activity_count / sum(a.activity_count for a in popular_analyses)) * 100, 
-                            2
-                        ) if popular_analyses else 0
+                        'count': activity.activity_count,
                     }
                     for activity in popular_analyses
                 ]
