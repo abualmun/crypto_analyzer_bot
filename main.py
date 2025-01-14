@@ -12,6 +12,8 @@ import asyncio
 from src.services.database import AdminTypes, UserType
 from src.services.database_manager import DatabaseManager
 from src.utils.formatters import TelegramFormatter
+import logging
+logging.getLogger("httpx").setLevel(logging.WARNING)
 
 # Load environment variables
 load_dotenv()
@@ -89,15 +91,15 @@ async def progress_bar(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def print_id(update,context):
     await update.message.reply_text(update.message.from_user.id)
 # Create the bot application
-async def main():
-    application = (
-        ApplicationBuilder()
-        .token("YOUR_TELEGRAM_BOT_TOKEN")
-        .build()
-    )
+# async def main():
+#     application = (
+#         ApplicationBuilder()
+#         .token("YOUR_TELEGRAM_BOT_TOKEN")
+#         .build()
+#     )
 
-    # Start the bot
-    await application.run_polling()
+#     # Start the bot
+#     await application.run_polling()
 
 
 def main():

@@ -7,7 +7,7 @@ from src.services.database_manager import DatabaseManager
 from ..keyboards.reply_keyboards import AnalysisKeyboards
 from .analysis_handlers import AnalysisHandler
 from ...utils.formatters import TelegramFormatter
-from ...education.content import educational_content, get_module_by_key
+
 
 class CallbackHandler:
     def __init__(self):
@@ -82,10 +82,15 @@ class CallbackHandler:
             elif data.startswith("education_"):
                 await self._handle_education_selection(query, user_id)
 
+
         except Exception as e:
             await query.answer(f"{self.formatter._t('error')}: {str(e)}")
 
+    # Existing methods: _handle_menu_selection, _handle_analysis_selection,
+    # _handle_timeframe_selection, _handle_chart_selection, _handle_settings_selection
+    # _handle_back_button, _handle_help_selection.
     async def _handle_menu_selection(self, query, user_id):
+      # Existing method, no changes
         """Handle main menu selections"""
         action = query.data.split("_")[1]
         
@@ -112,14 +117,13 @@ class CallbackHandler:
                 self.formatter._t('select_settings'),
                 reply_markup=self.keyboards.get_settings_menu()
             )
-            
         elif action == "education":
              await query.edit_message_text(
                 self.formatter._t('education_menu'),
                 reply_markup=self.keyboards.get_education_menu()
             )
-
     async def _handle_analysis_selection(self, query, user_id):
+      # Existing method, no changes
         """Handle analysis type selections"""
         action = query.data.split("_")[1]
         
@@ -149,6 +153,7 @@ class CallbackHandler:
             )
 
     async def _handle_timeframe_selection(self, query, user_id):
+      # Existing method, no changes
         """Handle timeframe selections"""
         timeframe = query.data.split("_")[1]
         state = self.user_states.get(user_id, {})
@@ -162,6 +167,7 @@ class CallbackHandler:
         )
 
     async def _handle_chart_selection(self, query, user_id):
+      # Existing method, no changes
         """Handle chart type selections"""
         chart_type = query.data.split("_")[1]
         self.user_states[user_id] = {"action": "chart", "type": chart_type}
@@ -490,85 +496,149 @@ class CallbackHandler:
         
             
     async def _handle_help_selection(self, query, user_id):
-        """Handle help menu selections"""
-        section = query.data.split("_")[1]
-        
-        if section == "intro":
-            await query.edit_message_text(
-                self._get_help_intro_text(),
-                reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "commands":
-            await query.edit_message_text(
-                self._get_help_commands_text(),
-                reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "navigation":
-            await query.edit_message_text(
-                self._get_help_navigation_text(),
-                reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "analysis":
-            await query.edit_message_text(
-                self._get_help_analysis_text(),
-                reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "charts":
-            await query.edit_message_text(
-                self._get_help_charts_text(),
-               reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "news":
-           await query.edit_message_text(
-               self._get_help_news_text(),
-               reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "agent":
-            await query.edit_message_text(
-                self._get_help_agent_text(),
-                reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "troubleshooting":
-           await query.edit_message_text(
-                self._get_help_troubleshooting_text(),
-               reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "settings":
-            await query.edit_message_text(
-                self._get_help_settings_text(),
-                reply_markup=self.keyboards.get_help_sub_menu()
-            )
-        elif section == "feedback":
-           await query.edit_message_text(
-                self._get_help_feedback_text(),
-               reply_markup=self.keyboards.get_help_sub_menu()
-            )
-           
-    async def _handle_education_selection(self, query, user_id):
-        """Handle education menu selections"""
-        section = query.data.split("_")[1]
+         """Handle help menu selections"""
+         section = query.data.split("_")[1]
          
-        if section == "back":
+         if section == "intro":
+             await query.edit_message_text(
+                 self._get_help_intro_text(),
+                 reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "commands":
+             await query.edit_message_text(
+                 self._get_help_commands_text(),
+                 reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "navigation":
+             await query.edit_message_text(
+                 self._get_help_navigation_text(),
+                 reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "analysis":
+             await query.edit_message_text(
+                 self._get_help_analysis_text(),
+                 reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "charts":
+             await query.edit_message_text(
+                 self._get_help_charts_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "news":
             await query.edit_message_text(
-               self.formatter._t('education_menu'),
-                reply_markup=self.keyboards.get_education_menu()
-            )
-        else:
-            module = get_module_by_key(section)
-            if module:
-                text = f"*{module.get('title','')}*\n\n{module.get('text','')}\n\n"
-                links = module.get('links',[])
-                for link in links:
-                    text += f"[{link[0]}]({link[1]})\n"
+                self._get_help_news_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "agent":
+             await query.edit_message_text(
+                 self._get_help_agent_text(),
+                 reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "troubleshooting":
+            await query.edit_message_text(
+                 self._get_help_troubleshooting_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "settings":
+             await query.edit_message_text(
+                 self._get_help_settings_text(),
+                 reply_markup=self.keyboards.get_help_sub_menu()
+             )
+         elif section == "feedback":
+            await query.edit_message_text(
+                 self._get_help_feedback_text(),
+                reply_markup=self.keyboards.get_help_sub_menu()
+             )
+    
+    async def _handle_education_selection(self, query, user_id):
+        """Handle education-related selections"""
+        data = query.data
+        sections = data.split("_")[1:]  # Remove 'education' prefix
+        
+        try:
+            # Handle back to education menu
+            if sections[0] == "back":
+                await query.edit_message_text(
+                    self.formatter._t('education_menu'),
+                    reply_markup=self.keyboards.get_education_menu()
+                )
+                return
+
+            # Handle main category selection (e.g., basic_concepts, technical_analysis)
+            if len(sections) == 1:
+                category = sections[0]
+                message_text = ""
+                
+                # Get all topics for this category
+                topic_keys = []
+                for key in self.formatter.languages[self.formatter.current_language].keys():
+                    if key.startswith(f"education_topic_{category}") and key.endswith("_title"):
+                        base_key = key.rsplit('_title', 1)[0]
+                        topic_keys.append(base_key)
+
+                message_text = self.formatter._t(f'education_{category}')
                 
                 await query.edit_message_text(
-                   text,
-                   reply_markup=self.keyboards.get_education_sub_menu(),
-                    parse_mode="Markdown",
-                    disable_web_page_preview=True
+                    message_text,
+                    reply_markup=self.keyboards.get_education_sub_menu(category),
+                    parse_mode="Markdown"
                 )
+                return
+
+            # Handle specific topic selection
+            category = sections[0]
+            topic = "_".join(sections[1:])  # Handle multi-part topic names
             
-    
+            # Build full message with title, content, and links
+            message_text = ""
+            
+            # Get title
+            title_key = f"education_topic_{category}_{topic}_title"
+            title = self.formatter._t(title_key)
+            if title:
+                message_text += f"*{title}*\n\n"
+            
+            # Get main content
+            text_key = f"education_topic_{category}_{topic}_text"
+            text = self.formatter._t(text_key)
+            if text:
+                message_text += f"{text}\n\n"
+            
+            # Add any associated links
+            link_counter = 1
+            while True:
+                link_text_key = f"education_topic_{category}_{topic}_link_{link_counter}_text"
+                link_url_key = f"education_topic_{category}_{topic}_link_{link_counter}_url"
+                
+                link_text = self.formatter._t(link_text_key)
+                link_url = self.formatter._t(link_url_key)
+                
+                if not (link_text and link_url):
+                    break
+                    
+                message_text += f"[{link_text}]({link_url})\n"
+                link_counter += 1
+            
+            # Show the content with a back button
+            await query.edit_message_text(
+                message_text,
+                reply_markup=self.keyboards.get_education_sub_menu(category),
+                parse_mode="Markdown",
+                disable_web_page_preview=True
+            )
+
+        except Exception as e:
+            print(f"Error in education handler: {str(e)}")
+            await query.edit_message_text(
+                f"{self.formatter._t('error')}: {str(e)}",
+                reply_markup=self.keyboards.get_education_menu()
+            )
+        finally:
+            await query.answer()
+    # Existing helper methods: _get_help_intro_text, _get_help_commands_text
+    # _get_help_navigation_text, _get_help_analysis_text, _get_help_charts_text
+    # _get_help_news_text ,_get_help_agent_text , _get_help_troubleshooting_text,
+    # _get_help_settings_text,  _get_help_feedback_text
     def _get_help_intro_text(self):
         """Returns the help intro text."""
         return self.formatter._t("help_intro_text")
