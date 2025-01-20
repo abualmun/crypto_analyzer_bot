@@ -5,7 +5,10 @@ from plotly.subplots import make_subplots
 import numpy as np
 import emoji
 import re
-
+import plotly.graph_objects as go
+import plotly.io as pio
+import os
+from playwright.async_api import async_playwright
 def validate_dataframe(df):
     """Ensure the DataFrame is valid for plotting."""
     required_columns = {'open', 'high', 'low', 'close', 'volume'}
@@ -362,7 +365,7 @@ def create_technical_cards(df, ma_data=None, rsi_data=None):
         print(f"Debug: Error in create_technical_cards: {str(e)}")
         return dp.Text("Error creating technical cards")
 
-def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None, 
+async def save_charts_to_pdf(directory,filename, df, ma_data=None, macd_data=None, rsi_data=None, 
                       support_levels=None, resistance_levels=None, style=None, 
                       charts_to_include=None, labels=None, intro_text=None, 
                       max_lines_per_page=7):
@@ -390,6 +393,7 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
         print("Debug: Creating summary section")
         blocks.append(dp.Text("## Market Summary"))
         summary_cards = create_summary_cards(df)
+        
         if summary_cards:
             blocks.append(summary_cards)
         
@@ -418,22 +422,34 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
                 
                 if chart == "price":
                     fig = create_candlestick_chart(df, style)
-                    blocks.append(dp.Plot(fig))
+                    image_path =  f"{directory}/plot_image.png"
+                    pio.write_image(fig, image_path, format="png", width=800, height=600)
+                    blocks.append(dp.Media(file=image_path))
                 elif chart == "moving_averages" and ma_data:
                     fig = create_ma_chart(df, ma_data, style)
-                    blocks.append(dp.Plot(fig))
+                    image_path =  f"{directory}/plot_image.png"
+                    pio.write_image(fig, image_path, format="png", width=800, height=600)
+                    blocks.append(dp.Media(file=image_path))
                 elif chart == "macd" and macd_data:
                     fig = create_macd_chart(df, macd_data, style)
-                    blocks.append(dp.Plot(fig))
+                    image_path =  f"{directory}/plot_image.png"
+                    pio.write_image(fig, image_path, format="png", width=800, height=600)
+                    blocks.append(dp.Media(file=image_path))
                 elif chart == "rsi" and len(rsi_data) > 0:
                     fig = create_rsi_chart(df, rsi_data, style)
-                    blocks.append(dp.Plot(fig))
+                    image_path =  f"{directory}/plot_image.png"
+                    pio.write_image(fig, image_path, format="png", width=800, height=600)
+                    blocks.append(dp.Media(file=image_path))
                 elif chart == "volume":
                     fig = create_volume_chart(df, style)
-                    blocks.append(dp.Plot(fig))
+                    image_path =  f"{directory}/plot_image.png"
+                    pio.write_image(fig, image_path, format="png", width=800, height=600)
+                    blocks.append(dp.Media(file=image_path))
                 elif chart == "support_resistance" and support_levels and resistance_levels:
                     fig = create_support_resistance_chart(df, support_levels, resistance_levels, style)
-                    blocks.append(dp.Plot(fig))
+                    image_path =  f"{directory}/plot_image.png"
+                    pio.write_image(fig, image_path, format="png", width=800, height=600)
+                    blocks.append(dp.Media(file=image_path))
             except Exception as e:
                 print(f"Debug: Error creating chart {chart}: {str(e)}")
                 blocks.append(dp.Text(f"Error creating {chart} chart"))
@@ -442,10 +458,14 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
         print("Debug: Adding data table")
         blocks.append(dp.Text("## Historical Data"))
         blocks.append(dp.DataTable(df))
+                
+        # Example Plotly figure
         
         # Create and save report
         report = dp.Report(*blocks)
-        report.save(filename)
+        report.save(f"{filename}.html")
+        await html_to_pdf(f"{filename}.html",f'{filename}.pdf')
+
         
         print(f"Enhanced report saved to {filename}")
         
@@ -457,3 +477,14 @@ def save_charts_to_pdf(filename, df, ma_data=None, macd_data=None, rsi_data=None
             dp.Text(f"An error occurred while generating the report: {str(e)}")
         )
         error_report.save(filename)
+async def html_to_pdf(input_html, output_pdf):
+        # Get absolute path of the HTML file
+        abs_path = os.path.abspath(input_html)
+        file_url = f"file://{abs_path}"  # Create the file:// URL
+
+        async with async_playwright() as p:  # Correct usage of async context manager
+            browser = await p.chromium.launch()
+            page = await browser.new_page()
+            await page.goto(file_url)
+            await page.pdf(path=output_pdf, format="A4")
+            await browser.close()
