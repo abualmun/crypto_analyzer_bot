@@ -111,7 +111,12 @@ async def print_id(update,context):
 #     await application.run_polling()
 
 
+
 def main():
+
+
+    
+
  
     """Main function to run the bot"""
     # Create application

@@ -299,28 +299,28 @@ class AnalysisHandler:
             await update_progress_bar(progress+20,loading_message)
 
             with tempfile.TemporaryDirectory() as temp_dir:
-                chart_path = os.path.join(temp_dir, f'{chart_type}_chart.html')
+                chart_path = os.path.join(temp_dir, f'{chart_type}_chart')
 
                 # Step 3: Generate chart based on type
                 if chart_type == 'price':
-                    save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
+                    await save_charts_to_pdf(directory=temp_dir,filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['price'])
                 elif chart_type == 'ma':
                     ma_data = analysis['trend_indicators']['moving_averages']
-                    save_charts_to_pdf(filename=chart_path, df=df, ma_data=ma_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
+                    await save_charts_to_pdf(directory=temp_dir,filename=chart_path, df=df, ma_data=ma_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['moving_averages'])
                 elif chart_type == 'macd':
                     macd_data = analysis['trend_indicators']['macd']
-                    save_charts_to_pdf(filename=chart_path, df=df, macd_data=macd_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
+                    await save_charts_to_pdf(directory=temp_dir,filename=chart_path, df=df, macd_data=macd_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['macd'])
                 elif chart_type == 'rsi':
                     rsi_data = analysis['momentum_indicators']['rsi']['all']
-                    save_charts_to_pdf(filename=chart_path, df=df, rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
+                    await save_charts_to_pdf(directory=temp_dir,filename=chart_path, df=df, rsi_data=rsi_data, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['rsi'])
                 elif chart_type == 'volume':
-                    save_charts_to_pdf(filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['volume'])
+                    await save_charts_to_pdf(directory=temp_dir,filename=chart_path, df=df, style=create_plot_style(color_up='blue', color_down='orange', bgcolor='lightgray'), charts_to_include=['volume'])
                 elif chart_type == 'full':
                     ma_data = analysis['trend_indicators']['moving_averages']  
                     macd_data = analysis['trend_indicators']['macd']
                     rsi_data = analysis['momentum_indicators']['rsi']['all']    
-                    save_charts_to_pdf(
-                        filename=chart_path,
+                    await save_charts_to_pdf(
+                        directory=temp_dir,filename=chart_path,
                         df=df,
                         ma_data=ma_data,
                         macd_data=macd_data,
@@ -335,7 +335,7 @@ class AnalysisHandler:
                     return
 
                 await update_progress_bar(progress+40,loading_message)
-
+                chart_path = chart_path+".pdf"
                 # Step 4: Send the chart
                 if os.path.exists(chart_path):
                     await loading_message.delete()
