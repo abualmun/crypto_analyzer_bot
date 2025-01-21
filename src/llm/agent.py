@@ -7,6 +7,8 @@ from typing import Dict, Optional
 from dotenv import load_dotenv
 import sys
 import os
+from telegram import Update
+from telegram.ext import ContextTypes
 
 from src.services.database_manager import DatabaseManager
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -159,31 +161,52 @@ class CryptoAnalysisAgent:
         response = self.llm.invoke([HumanMessage(content=indicator_prompt)])
         return response.content
 
-    def process_query(self, text: str) -> str:
+    async def process_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         """
-        Process a user query and return the response.
-        
+        Process a user query from Telegram and send the response.
+
         Args:
-            text (str): The user's query text
-            
+            update (Update): The incoming update from Telegram
+            context (ContextTypes.DEFAULT_TYPE): The context object for this update
+
         Returns:
-            str: The processed response
-            
+            None: Responses are sent directly via Telegram
+
         Raises:
             ValueError: If the query couldn't be processed
             Exception: For other unexpected errors
         """
+        # Set language from context
+        self.formatter.set_language(context.user_data['language'])
+
+        # Get the message text
+        text = update.message.text
+
+        # Show loading message
+        loading_message = await update.message.reply_text(
+            self.formatter.format_loading_message()
+        )
+
         try:
-            result = self.agent.invoke(text)
-            return result
+            # Process the query
+            result = await self.agent.invoke(text)
+
+            # Send the response
+            await loading_message.edit_text(result)
+
         except ValueError as e:
             if "Could not parse LLM output" in str(e):
-                return {
-                   'output': self.formatter._t('query_parse_error')
-               }
-            raise e
+                await loading_message.edit_text(
+                    self.formatter._t('query_parse_error')
+                )
+            else:
+                await loading_message.edit_text(
+                    str(e)
+                )
         except Exception as e:
-           raise Exception(self.formatter._t('query_error').format(error=str(e)))
+            await loading_message.edit_text(
+                self.formatter._t('query_error').format(error=str(e))
+            )
 
 def main():
     """Example usage of the CryptoAnalysisAgent"""

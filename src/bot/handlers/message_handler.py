@@ -31,13 +31,14 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         
         if not state:
             # No active state, ignore the message or provide guidance
-            loading_message = await update.message.reply_text(
-            self.formatter._t('loading'))
+            await self.agent.process_query(update, context)
+            # loading_message = await update.message.reply_text(
+            # self.formatter._t('loading'))
 
-            message = self.agent.process_query(text)
-            print(message)
-            await loading_message.edit_text(text=message['output'])
-            return
+            # message = self.agent.process_query(text)
+            # print(message)
+            # await loading_message.edit_text(text=message['output'])
+            # return
 
         try:
             action = state.get('action')
