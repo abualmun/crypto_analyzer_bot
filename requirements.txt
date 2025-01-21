@@ -22,3 +22,4 @@ langchain-community
 plotly
 playwright
 kaleido
+psycopg2-binary

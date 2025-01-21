@@ -5,23 +5,18 @@ from datetime import datetime, timedelta
 import pandas as pd
 import logging
 from typing import Optional, Dict, List
-from .models import Base, CryptoOHLCV, TimeInterval, CoinMetadata
+from .database import Base, OHLC, TimeInterval, Coin
+import os
 
 class CacheManager:
-    def __init__(self, database_url: str, cache_duration: Dict[str, int] = None):
-        """
-        Initialize the cache manager.
-        
-        Args:
-            database_url: SQLAlchemy database URL
-            cache_duration: Dict of cache durations in seconds for different intervals
-                          e.g., {'1': 300, '7': 600, '30': 1800, '90': 3600}
-        """
+    def __init__(self, database_url: str = None, cache_duration: Dict[str, int] = None):
+        """Initialize the cache manager."""
+        if database_url is None:
+            database_url = self._construct_database_url()   
         self.engine = create_engine(database_url)
         Base.metadata.create_all(self.engine)
         self.Session = sessionmaker(bind=self.engine)
         
-        # Default cache durations for different intervals (in seconds)
         self.cache_duration = cache_duration or {
              1: 300,    # 5 minutes for 1-day data
              7: 600,    # 10 minutes for 7-day data
@@ -29,6 +24,11 @@ class CacheManager:
              90: 3600   # 1 hour for 90-day data
         }
         self.logger = logging.getLogger(__name__)
+
+    def _construct_database_url(self) -> str:
+        """Construct PostgreSQL database URL from environment variables."""
+        # This method remains unchanged
+        return f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', '')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'crypto_analytics')}"
 
     def get_ohlcv_data(
         self, 
@@ -38,46 +38,35 @@ class CacheManager:
         start_time: datetime,
         end_time: datetime
     ) -> Optional[pd.DataFrame]:
-        """
-        Get OHLCV data from cache if available and not expired.
-        
-        Args:
-            coin_id: Cryptocurrency identifier
-            vs_currency: Quote currency (e.g., 'usd')
-            interval: Time interval ('1', '7', '30', '90')
-            start_time: Start time for data range
-            end_time: End time for data range
-        """
+        """Get OHLCV data from cache if available and not expired."""
         session = self.Session()
         try:
-            # Get cache duration for this interval
             cache_duration = self.cache_duration.get(interval, 300)
             cache_threshold = datetime.utcnow() - timedelta(seconds=cache_duration)
             
             query = (
-                select(CryptoOHLCV)
+                select(OHLC)  # Changed from CryptoOHLCV to OHLC
                 .where(
-                    CryptoOHLCV.coin_id == coin_id,
-                    CryptoOHLCV.vs_currency == vs_currency,
-                    CryptoOHLCV.interval == TimeInterval(interval),
-                    CryptoOHLCV.timestamp.between(start_time, end_time),
-                    CryptoOHLCV.last_updated > cache_threshold
+                    OHLC.coin_id == coin_id,
+                    OHLC.vs_currency == vs_currency,
+                    OHLC.interval == TimeInterval(interval),
+                    OHLC.timestamp.between(start_time, end_time),
+                    OHLC.last_updated > cache_threshold
                 )
-                .order_by(CryptoOHLCV.timestamp)
+                .order_by(OHLC.timestamp)
             )
             
             result = session.execute(query).fetchall()
             
             if result:
-                # Convert to DataFrame
                 df = pd.DataFrame([{
-                    'timestamp': row.CryptoOHLCV.timestamp,
-                    'open': row.CryptoOHLCV.open,
-                    'high': row.CryptoOHLCV.high,
-                    'low': row.CryptoOHLCV.low,
-                    'close': row.CryptoOHLCV.close,
-                    'volume': row.CryptoOHLCV.volume,
-                    'market_cap': row.CryptoOHLCV.market_cap
+                    'timestamp': row.OHLC.timestamp,
+                    'open': row.OHLC.open,
+                    'high': row.OHLC.high,
+                    'low': row.OHLC.low,
+                    'close': row.OHLC.close,
+                    'volume': row.OHLC.volume,
+                    'market_cap': row.OHLC.market_cap
                 } for row in result])
                 
                 df.set_index('timestamp', inplace=True)
@@ -98,31 +87,29 @@ class CacheManager:
         interval: str,
         df: pd.DataFrame
     ):
-        """
-        Update OHLCV data in the cache.
-        
-        Args:
-            coin_id: Cryptocurrency identifier
-            vs_currency: Quote currency (e.g., 'usd')
-            interval: Time interval ('1', '7', '30', '90')
-            df: DataFrame containing OHLCV data
-        """
+        """Update OHLCV data in the cache."""
         session = self.Session()
         try:
-            # Delete existing data for the same period and interval
             start_time = df.index.min()
             end_time = df.index.max()
             
-            session.query(CryptoOHLCV).filter(
-                CryptoOHLCV.coin_id == coin_id,
-                CryptoOHLCV.vs_currency == vs_currency,
-                CryptoOHLCV.interval == TimeInterval(interval),
-                CryptoOHLCV.timestamp.between(start_time, end_time)
+            # First, ensure the coin exists
+            coin = session.query(Coin).filter(Coin.id == coin_id).first()
+            if not coin:
+                self.logger.error(f"Coin {coin_id} not found in database")
+                raise ValueError(f"Coin {coin_id} not found in database")
+
+            # Delete existing data
+            session.query(OHLC).filter(
+                OHLC.coin_id == coin_id,
+                OHLC.vs_currency == vs_currency,
+                OHLC.interval == TimeInterval(interval),
+                OHLC.timestamp.between(start_time, end_time)
             ).delete()
 
             # Insert new data
             for timestamp, row in df.iterrows():
-                entry = CryptoOHLCV(
+                entry = OHLC(
                     coin_id=coin_id,
                     vs_currency=vs_currency,
                     interval=TimeInterval(interval),
@@ -145,27 +132,25 @@ class CacheManager:
             raise
         finally:
             session.close()
-    
+
     def update_coin_metadata(self, coin_data: Dict):
-        """
-        Update coin metadata in the cache.
-        """
+        """Update coin metadata in the cache."""
         session = self.Session()
         try:
-            existing = session.query(CoinMetadata).filter_by(
-                coin_id=coin_data['id']
-            ).first()
+            existing = session.query(Coin).filter_by(id=coin_data['id']).first()
             
             if existing:
                 existing.symbol = coin_data.get('symbol')
                 existing.name = coin_data.get('name')
+                existing.platforms = coin_data.get('platforms', {})
                 existing.extra_data = coin_data
                 existing.last_updated = datetime.utcnow()
             else:
-                entry = CoinMetadata(
-                    coin_id=coin_data['id'],
+                entry = Coin(
+                    id=coin_data['id'],
                     symbol=coin_data.get('symbol'),
                     name=coin_data.get('name'),
+                    platforms=coin_data.get('platforms', {}),
                     extra_data=coin_data,
                     last_updated=datetime.utcnow()
                 )
@@ -181,23 +166,22 @@ class CacheManager:
             session.close()
 
     def get_coin_metadata(self, coin_id: str) -> Optional[Dict]:
-        """
-        Get coin metadata from cache if available and not expired.
-        """
+        """Get coin metadata from cache if available and not expired."""
         session = self.Session()
         try:
             cache_threshold = datetime.utcnow() - timedelta(seconds=self.cache_duration[30])
             
-            result = session.query(CoinMetadata).filter(
-                CoinMetadata.coin_id == coin_id,
-                CoinMetadata.last_updated > cache_threshold
+            result = session.query(Coin).filter(
+                Coin.id == coin_id,
+                Coin.last_updated > cache_threshold
             ).first()
             
             if result:
                 return {
-                    'id': result.coin_id,
+                    'id': result.id,
                     'symbol': result.symbol,
                     'name': result.name,
+                    'platforms': result.platforms,
                     'extra_data': result.extra_data
                 }
             
@@ -210,17 +194,14 @@ class CacheManager:
             session.close()
 
     def get_coin_id_by_symbol(self, symbol: str) -> Optional[str]:
-        """
-        Get coin ID from database using symbol.
-        Returns None if symbol not found.
-        """
+        """Get coin ID from database using symbol."""
         session = self.Session()
         try:
-            result = session.query(CoinMetadata)\
-                .filter(CoinMetadata.symbol.ilike(symbol))\
+            result = session.query(Coin)\
+                .filter(Coin.symbol.ilike(symbol))\
                 .first()
 
-            return result.coin_id if result else None
+            return result.id if result else None
 
         except Exception as e:
             self.logger.error(f"Error searching symbol {symbol}: {str(e)}")
@@ -233,18 +214,20 @@ class CacheManager:
         session = self.Session()
         try:
             for coin in coins:
-                existing = session.query(CoinMetadata).filter_by(coin_id=coin['id']).first()
+                existing = session.query(Coin).filter_by(id=coin['id']).first()
                 
                 if existing:
                     existing.symbol = coin.get('symbol')
                     existing.name = coin.get('name')
+                    existing.platforms = coin.get('platforms', {})
                     existing.extra_data = coin
                     existing.last_updated = datetime.utcnow()
                 else:
-                    entry = CoinMetadata(
-                        coin_id=coin['id'],
+                    entry = Coin(
+                        id=coin['id'],
                         symbol=coin.get('symbol'),
                         name=coin.get('name'),
+                        platforms=coin.get('platforms', {}),
                         extra_data=coin,
                         last_updated=datetime.utcnow()
                     )
@@ -262,11 +245,12 @@ class CacheManager:
         """Get all coins from cache."""
         session = self.Session()
         try:
-            coins = session.query(CoinMetadata).all()
+            coins = session.query(Coin).all()
             return [{
-                'id': coin.coin_id,
+                'id': coin.id,
                 'symbol': coin.symbol,
                 'name': coin.name,
+                'platforms': coin.platforms,
                 **coin.extra_data
             } for coin in coins]
         finally:

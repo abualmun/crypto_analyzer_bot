@@ -8,16 +8,32 @@ from contextlib import contextmanager
 import logging
 from typing import List, Dict, Optional, Union, Tuple
 from .database import User, UserType, UserActivity, Admin, AdminActivity, Base, Coin, CoinPrice, OHLC, TrendingCoin
-
+import os
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class DatabaseManager:
-    def __init__(self, database_url: str = 'sqlite:///crypto_analytics.db'):
+    def __init__(self, database_url: str = None):
         """Initialize database connection and session maker."""
+        if database_url is None:
+            database_url = self._construct_database_url()
         self.engine = create_engine(database_url)
         Base.metadata.create_all(self.engine)
         self.SessionMaker = sessionmaker(bind=self.engine)
+
+    def _construct_database_url(self) -> str:
+        """Construct PostgreSQL database URL from environment variables."""
+        db_user = os.getenv("POSTGRES_USER", "postgres")
+        db_password = os.getenv("POSTGRES_PASSWORD", "")
+        db_host = os.getenv("POSTGRES_HOST", "localhost")
+        db_port = os.getenv("POSTGRES_PORT", "5432")
+        db_name = os.getenv("POSTGRES_DB", "crypto_analytics")
+        
+        return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+    
+    def init_db(self) -> None:
+        """Initialize the database and create all tables."""
+        Base.metadata.create_all(self.engine)
 
     @contextmanager
     def session_scope(self) -> Session:
@@ -310,7 +326,7 @@ class DatabaseManager:
         """Retrieve a user by their Telegram ID."""
         try:
             with self.session_scope() as session:
-                user = session.query(User).filter_by(telegram_id=telegram_id).first()
+                user = session.query(User).filter_by(telegram_id=str(telegram_id)).first()
                 return self._clone_object(user)
         except SQLAlchemyError as e:
             logger.error(f"Error fetching user with telegram_id {telegram_id}: {str(e)}")
@@ -365,6 +381,8 @@ class DatabaseManager:
         """Log a user's activity."""
         try:
             with self.session_scope() as session:
+                user = self.get_user_by_telegram_id(activity_data.get('user_id'))
+                activity_data['user_id'] = user.get('id')
                 activity = UserActivity(**activity_data)
                 session.add(activity)
                 session.flush()

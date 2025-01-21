@@ -11,7 +11,8 @@ from ..services.cache_manager import CacheManager
 class DataProcessor:
     def __init__(self):
         self.api = CoinGeckoAPI()
-        self.cache_manager = CacheManager("sqlite:///crypto_cache.db")
+        # self.cache_manager = CacheManager("sqlite:///crypto_cache.db")
+        self.cache_manager = CacheManager()
         self.logger = logging.getLogger(__name__)
 
 
@@ -35,7 +36,7 @@ class DataProcessor:
             pandas.DataFrame with OHLCV data or None if error occurs
         """
         
-        coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
+        # coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
         if coin_id is None:
             self.logger.error(f"Coin ID not found for symbol: {coin_id}")
             return None
@@ -145,7 +146,7 @@ class DataProcessor:
         Get the latest price for a coin.
         """
         try:
-            coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
+            # coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
             if coin_id is None:
                 self.logger.error(f"Coin ID not found for symbol: {coin_id}")
                 return None

@@ -11,6 +11,7 @@ import asyncio
 
 from src.services.database import AdminTypes, UserType
 from src.services.database_manager import DatabaseManager
+from src.services.database import AdminTypes
 from src.utils.formatters import TelegramFormatter
 import logging
 logging.getLogger("httpx").setLevel(logging.WARNING)
@@ -28,14 +29,14 @@ message_handler = CustomMessageHandler()  # Updated class name
 keyboards = AnalysisKeyboards()
 formatter = TelegramFormatter()
 db = DatabaseManager()
+db.init_db()
 
 # Share user_states between handlers
 callback_handler.user_states = user_states
 message_handler.user_states = user_states
 
 async def start_command(update, context):
-    
-    user = db.get_user_by_telegram_id(update.message.from_user.id)
+    user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     if not user :
         db.create_user({'telegram_id':update.message.from_user.id})
     formatter.set_language(user['language'])

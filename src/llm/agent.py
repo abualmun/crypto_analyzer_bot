@@ -1,3 +1,4 @@
+import asyncio
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import initialize_agent, Tool
 from langchain_core.tools import tool
@@ -177,10 +178,10 @@ class CryptoAnalysisAgent:
             Exception: For other unexpected errors
         """
         # Set language from context
-        self.formatter.set_language(context.user_data['language'])
+        # self.formatter.set_language(context.user_data['language'])
 
         # Get the message text
-        text = update.message.text
+        text = context.args[0]
 
         # Show loading message
         loading_message = await update.message.reply_text(
@@ -189,10 +190,10 @@ class CryptoAnalysisAgent:
 
         try:
             # Process the query
-            result = await self.agent.invoke(text)
+            result = await asyncio.to_thread(self.agent.invoke, text)
 
             # Send the response
-            await loading_message.edit_text(result)
+            await loading_message.edit_text(result['output'])
 
         except ValueError as e:
             if "Could not parse LLM output" in str(e):

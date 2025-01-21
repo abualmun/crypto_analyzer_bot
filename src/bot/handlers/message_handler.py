@@ -31,6 +31,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         
         if not state:
             # No active state, ignore the message or provide guidance
+            context.args = [text]
             await self.agent.process_query(update, context)
             # loading_message = await update.message.reply_text(
             # self.formatter._t('loading'))

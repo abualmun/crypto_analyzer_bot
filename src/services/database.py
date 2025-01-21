@@ -7,6 +7,12 @@ import enum
 # Create base class for declarative models
 Base = declarative_base()
 
+class TimeInterval(enum.Enum):
+    ONE_DAY = 1
+    SEVEN_DAYS = 7
+    THIRTY_DAYS = 30
+    NINETY_DAYS = 90
+
 class Coin(Base):
     """Model for storing basic cryptocurrency information."""
     __tablename__ = 'coins'
@@ -15,6 +21,7 @@ class Coin(Base):
     symbol = Column(String, nullable=False)  # e.g., "btc"
     name = Column(String, nullable=False)  # e.g., "Bitcoin"
     platforms = Column(JSON)
+    extra_data = Column(JSON)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     # Relationships
@@ -53,11 +60,16 @@ class OHLC(Base):
 
     id = Column(Integer, primary_key=True)
     coin_id = Column(String, ForeignKey('coins.id', ondelete='CASCADE'), nullable=False)
+    vs_currency = Column(String, nullable=False)
+    interval = Column(Enum(TimeInterval), nullable=False)
     timestamp = Column(DateTime, nullable=False)
-    open = Column(Float, nullable=False)
-    high = Column(Float, nullable=False)
-    low = Column(Float, nullable=False)
-    close = Column(Float, nullable=False)
+    open = Column(Float)
+    high = Column(Float)
+    low = Column(Float)
+    close = Column(Float)
+    volume = Column(Float)
+    market_cap = Column(Float)
+    last_updated = Column(DateTime, default=datetime.utcnow)
 
     # Relationship
     coin = relationship("Coin", back_populates="ohlc_data")
