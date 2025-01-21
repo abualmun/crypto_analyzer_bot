@@ -466,10 +466,10 @@ class DatabaseManager:
         """Get admin info by user ID if they are an admin."""
         
         try:
-            
+            user = self.get_user_by_telegram_id(user_id)
             with self.session_scope() as session:
                 admin = session.query(Admin).filter_by(
-                    user_id=user_id,
+                    user_id=user.get('id'),
                 ).first()
                 return self._clone_object(admin)
         except SQLAlchemyError as e:
