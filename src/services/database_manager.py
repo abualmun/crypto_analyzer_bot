@@ -22,14 +22,12 @@ class DatabaseManager:
         self.SessionMaker = sessionmaker(bind=self.engine)
 
     def _construct_database_url(self) -> str:
-        """Construct PostgreSQL database URL from environment variables."""
-        db_user = os.getenv("POSTGRES_USER", "postgres")
-        db_password = os.getenv("POSTGRES_PASSWORD", "")
-        db_host = os.getenv("POSTGRES_HOST", "localhost")
-        db_port = os.getenv("POSTGRES_PORT", "5432")
-        db_name = os.getenv("POSTGRES_DB", "crypto_analytics")
-        
-        return f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
+        """Construct PostgreSQL database URL from environment variables, prioritizing DATABASE_URL."""
+        database_url = os.getenv('DATABASE_URL')
+        if database_url:
+            return database_url
+        else:
+            return f"postgresql://{os.getenv('POSTGRES_USER', 'postgres')}:{os.getenv('POSTGRES_PASSWORD', '')}@{os.getenv('POSTGRES_HOST', 'localhost')}:{os.getenv('POSTGRES_PORT', '5432')}/{os.getenv('POSTGRES_DB', 'crypto_analytics')}"
     
     def init_db(self) -> None:
         """Initialize the database and create all tables."""
