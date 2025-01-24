@@ -39,6 +39,7 @@ class DataProcessor:
         # coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
         if coin_id is None:
             self.logger.error(f"Coin ID not found for symbol: {coin_id}")
+            print(f"Coin ID not found for symbol: {coin_id}")
             return None
         # Calculate time range
         end_time = datetime.utcnow()
@@ -87,6 +88,7 @@ class DataProcessor:
 
         except Exception as e:
             self.logger.error(f"Error fetching data for {coin_id}: {str(e)}")
+            print(str(e))
             return None
 
     def _process_market_data(self, market_data: Dict, ohlc_data: List) -> pd.DataFrame:
@@ -148,6 +150,7 @@ class DataProcessor:
         try:
             # coin_id = self.cache_manager.get_coin_id_by_symbol(coin_id)
             if coin_id is None:
+                print(f"Coin ID not found for symbol: {coin_id}")
                 self.logger.error(f"Coin ID not found for symbol: {coin_id}")
                 return None
             price_data = self.api.get_simple_price(
@@ -204,4 +207,5 @@ class DataProcessor:
 
         except Exception as e:
             self.logger.error(f"Error fetching coin list: {str(e)}")
+            print(str(e))
             return []

@@ -2,12 +2,29 @@ FROM python:3.10-slim-bullseye
 
 WORKDIR /app
 
-# Install build dependencies
+# Install build dependencies and Playwright system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     wget \
     ca-certificates \
     make \
+    # Playwright dependencies
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libdbus-1-3 \
+    libxkbcommon0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxfixes3 \
+    libxrandr2 \
+    libgbm1 \
+    libasound2 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install TA-Lib
@@ -35,6 +52,10 @@ RUN pip install --no-cache-dir ta-lib==0.4.24
 # Copy and install requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright browsers
+RUN playwright install --with-deps chromium && \
+    playwright install-deps
 
 # Copy application code
 COPY . /app/
