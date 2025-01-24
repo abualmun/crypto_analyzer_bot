@@ -25,4 +25,4 @@ plotly
 playwright
 kaleido
 psycopg2-binary
-ta-lib
+# ta-lib
