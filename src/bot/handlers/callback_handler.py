@@ -261,17 +261,20 @@ class CallbackHandler:
     async def _handle_admin_selection(self, query, user_id):
         """Handle admin menu selections"""
         action = query.data.split("_")[1]
-        admin_role = self.db_manager.get_admin_by_user_id(user_id=user_id)['role']
-
+        try:
+            admin_role = self.db_manager.get_admin_by_user_id(user_id=user_id)['role']
+        except Exception as e:
+            return await query.edit_message_text(
+                self.formatter._t('error'),
+                reply_markup=self.keyboards.get_admin_menu()
+            )
         if action == "tracking":
             await query.edit_message_text(
                 self.formatter._t('select_tracking_option'),
                 reply_markup=self.keyboards.get_user_tracking_menu()
             )
-            
         elif action == "users":
             if admin_role == AdminTypes.WATCHER:
-
                 await query.edit_message_text(
                     self.formatter._t('not_authorized'),
                     reply_markup=self.keyboards.get_admin_menu()
@@ -287,7 +290,6 @@ class CallbackHandler:
                     self.formatter._t('select_admin_management_option'),
                     reply_markup=self.keyboards.get_admins_managing_menu()
                 )
-                
             else:
                 await query.edit_message_text(
                     self.formatter._t('not_authorized'),
@@ -297,61 +299,88 @@ class CallbackHandler:
     async def _handle_tracking_selection(self, query, user_id):
         """Handle user tracking selections"""
         action = query.data.split("_")[1]
-        
-        if action == "searched":
-            searched_data = await self._get_most_searched_data()
-            await query.edit_message_text(
-                f"{self.formatter._t('most_searched_stats')}\n{self.formatter.format_popular_results(
-    [{"coin": r["coin"], "count": r["count"]} for r in searched_data],headers=("coin", "count"))}",
-                reply_markup=self.keyboards.get_user_tracking_menu()
-            )
-            
-        elif action == "analysis":
-            analysis_data = await self._get_popular_analysis_data()
-            await query.edit_message_text(
-                f"{self.formatter._t('popular_analysis_stats')}\n{self.formatter.format_popular_results(analysis_data,('analysis_type','count'))}",
-                reply_markup=self.keyboards.get_user_tracking_menu()
-            )
+        try:
+            if action == "searched":
+                searched_data = await self._get_most_searched_data()
+                await query.edit_message_text(
+                    f"{self.formatter._t('most_searched_stats')}\n{self.formatter.format_popular_results([{'coin': r['coin'], 'count': r['count']} for r in searched_data], headers=('coin', 'count'))}",
+                    reply_markup=self.keyboards.get_user_tracking_menu()
+                )
+            elif action == "analysis":
+                analysis_data = await self._get_popular_analysis_data()
+                await query.edit_message_text(
+                    f"{self.formatter._t('popular_analysis_stats')}\n{self.formatter.format_popular_results(analysis_data, ('analysis_type', 'count'))}",
+                    reply_markup=self.keyboards.get_user_tracking_menu()
+                )
+        except Exception as e:
+            await query.edit_message_text(self.formatter._t('error'))
 
     async def _handle_users_action(self, query, user_id):
         """Handle various user management actions"""
         action = query.data.split("_")[1]
-        
-        if action == "subscribe":
-            self.user_states[user_id] = {"action": "awaiting_subscription_change"}
-            await query.edit_message_text(
-                self.formatter._t('provide_user_id_for_subscription')
-            )
-            
-        elif action == "ban":
-            self.user_states[user_id] = {"action": "awaiting_user_ban"}
-            await query.edit_message_text(
-                self.formatter._t('provide_user_id_for_ban')
-            )
+        try:
+            if action == "subscribe":
+                self.user_states[user_id] = {"action": "awaiting_subscription_change"}
+                await query.edit_message_text(
+                    self.formatter._t('provide_user_id_for_subscription')
+                )
+            elif action == "ban":
+                self.user_states[user_id] = {"action": "awaiting_user_ban"}
+                await query.edit_message_text(
+                    self.formatter._t('provide_user_id_for_ban')
+                )
+        except Exception as e:
+            await query.edit_message_text(self.formatter._t('error'))
 
     async def _handle_back_button(self, query, user_id):
         """Handle back button presses"""
         destination = query.data.split("_")[1]
-        
-        if destination == "main":
-            await query.edit_message_text(
-                self.formatter._t('main_menu'),
-                reply_markup=self.keyboards.get_main_menu()
-            )
-        elif destination == "analysis":
-            await query.edit_message_text(
-                self.formatter._t('select_analysis'),
-                reply_markup=self.keyboards.get_analysis_menu()
-            )
-        elif destination == "admin":
-            await query.edit_message_text(
-                self.formatter._t('admin_menu'),
-                reply_markup=self.keyboards.get_admin_menu()
-            )
+        try:
+            if destination == "main":
+                await query.edit_message_text(
+                    self.formatter._t('main_menu'),
+                    reply_markup=self.keyboards.get_main_menu()
+                )
+            elif destination == "analysis":
+                await query.edit_message_text(
+                    self.formatter._t('select_analysis'),
+                    reply_markup=self.keyboards.get_analysis_menu()
+                )
+            elif destination == "admin":
+                await query.edit_message_text(
+                    self.formatter._t('admin_menu'),
+                    reply_markup=self.keyboards.get_admin_menu()
+                )
+        except Exception as e:
+            await query.edit_message_text(self.formatter._t('error'))
+
+    async def _handle_admins_action(self, query, user_id):
+        """Handle admin management actions"""
+        action = query.data.split("_")[1]
+        try:
+            if action == "new":
+                self.user_states[user_id] = {"action": "awaiting_new_admin_id"}
+                await query.edit_message_text(
+                    self.formatter._t('provide_new_admin_id'),
+                    reply_markup=self.keyboards.get_admin_menu()
+                )
+            elif action == "change":
+                self.user_states[user_id] = {"action": "awaiting_role_change_id"}
+                await query.edit_message_text(
+                    self.formatter._t('provide_admin_id_for_role_change'),
+                    reply_markup=self.keyboards.get_admin_menu()
+                )
+            elif action == "delete":
+                self.user_states[user_id] = {"action": "awaiting_delete_admin_id"}
+                await query.edit_message_text(
+                    self.formatter._t('provide_admin_id_for_removal'),
+                    reply_markup=self.keyboards.get_admin_menu()
+                )
+        except Exception as e:
+            await query.edit_message_text(self.formatter._t('error'))
 
     async def _get_most_searched_data(self):
         try:
-            print(self.db_manager.get_most_popular_coins(10))
             return self.db_manager.get_most_popular_coins(10)
             
         except Exception as e:
@@ -359,16 +388,12 @@ class CallbackHandler:
 
     async def _get_popular_analysis_data(self):
         try:
-            print(self.db_manager.get_most_popular_analysis_types(10))
 
             return self.db_manager.get_most_popular_analysis_types(10)
         except Exception as e:
             return await str(e)
 
-    async def _get_users_list(self):
-        """Retrieve list of users"""
-        return "Users list placeholder"
-    
+ 
     async def _handle_admins_action(self, query, user_id):
         """Handle admin management actions"""
         action = query.data.split("_")[1]
@@ -447,7 +472,7 @@ class CallbackHandler:
                 )
         else:
             await query.edit_message_text(
-            self.formatter._t('somthing went wrong'))
+            self.formatter._t('error'))
 
     async def _handle_admin_remove(self,query,context,user_id):
             success = self.db_manager.remove_admin(admin_id=context.args[0],removed_by=user_id)
@@ -458,7 +483,7 @@ class CallbackHandler:
                 )
             else:
                 await query.edit_message_text(
-                self.formatter._t('somthing went wrong'))
+                self.formatter._t('error'))
 
 
     async def _handle_admin_add(self,query,context,user_id):
@@ -470,7 +495,7 @@ class CallbackHandler:
                 )
             else:
                 await query.edit_message_text(
-                self.formatter._t('somthing went wrong'))
+                self.formatter._t('error'))
 
     async def _handle_change_admin_role(self,query,context,user_id):
         role = query.data.split("_")[-1]
@@ -489,7 +514,7 @@ class CallbackHandler:
                 )
         else:
             await query.edit_message_text(
-            self.formatter._t('somthing went wrong'))
+            self.formatter._t('error'))
                    
         
             
