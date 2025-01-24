@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir wheel setuptools
-RUN pip install --no-cache-dir numpy==1.26.4 pandas
+RUN pip install --no-cache-dir numpy==1.26.4 pandas==1.5.3 
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
