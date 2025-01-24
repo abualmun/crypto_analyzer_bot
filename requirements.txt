@@ -1,3 +1,5 @@
+setuptools
+wheel
 python-telegram-bot==20.4
 python-dotenv==1.0
 pycoingecko==3.1.0
