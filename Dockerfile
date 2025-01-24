@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.12-slim-bullseye
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -6,7 +6,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev \
     pkg-config \
     python3-distutils \
-    libta-lib-dev \
+    wget \
+    && cd /tmp \
+    && wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
+    && tar -xvzf ta-lib-0.4.0-src.tar.gz \
+    && cd ta-lib/ \
+    && ./configure --prefix=/usr \
+    && make \
+    && make install \
+    && cd .. \
+    && rm -rf ta-lib-0.4.0-src.tar.gz ta-lib/ \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir wheel setuptools
