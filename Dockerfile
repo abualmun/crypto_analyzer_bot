@@ -1,4 +1,4 @@
-FROM python:3.11-slim-bullseye
+FROM python:3.10-slim-bullseye
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     make \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install TA-Lib C library
+# Download and install TA-Lib
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     tar -xzf ta-lib-0.4.0-src.tar.gz && \
     cd ta-lib/ && \
@@ -27,10 +27,10 @@ ENV TA_INCLUDE_PATH=/usr/include
 
 # Install Python packages
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir wheel setuptools numpy==1.26.4 pandas
+    pip install --no-cache-dir wheel setuptools numpy==1.24.3 pandas
 
 # Install TA-Lib Python wrapper
-RUN pip install --no-cache-dir TA-Lib==0.4.24
+RUN pip install --no-cache-dir ta-lib==0.4.24
 
 # Copy and install requirements
 COPY requirements.txt .
