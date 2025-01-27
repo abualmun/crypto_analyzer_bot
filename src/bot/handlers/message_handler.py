@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.ext import ContextTypes
 
+from src.bot.handlers.callback_handler import CallbackHandler
 from src.bot.keyboards.reply_keyboards import AnalysisKeyboards
 from src.services.database_manager import DatabaseManager
 from .analysis_handlers import AnalysisHandler
@@ -15,11 +16,9 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         self.formatter = TelegramFormatter()
         self.db_manager = DatabaseManager()
         self.keyboards = AnalysisKeyboards()
-        self.user_states = {}
-
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle text messages"""
-        user_id = update.effective_user.id
+        user_id = str(update.effective_user.id)
         text = update.message.text.lower()
 
         # Set language from context
@@ -27,7 +26,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
             self.formatter.set_language(context.user_data['language'])
 
         # Get user's current state
-        state = self.user_states.get(user_id, {})
+        state = context.user_data
 
         if not state:
             # No active state, ignore the message or provide guidance
@@ -60,7 +59,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
 
             elif action == 'awaiting_user_ban':
                 target_id = int(text)
-                context.args = [target_id]
+                context.user_data["target_id"] = target_id
                 user = self.db_manager.get_user_by_telegram_id(target_id)
                 if user:
                     await update.message.reply_text(
@@ -74,8 +73,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
                     )
 
             elif action == 'awaiting_subscription_change':
-                target_id = int(text)
-                context.args = [target_id]
+                target_id = text
                 user = self.db_manager.get_user_by_telegram_id(target_id)
                 if user:
                     await update.message.reply_text(
@@ -90,8 +88,9 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
                     )
 
             elif action == 'awaiting_delete_admin_id':
-                target_id = int(text)
-                context.args = [target_id]
+                target_id = text
+                context.user_data["target_id"] = target_id
+
                 user = self.db_manager.get_admin_by_user_id(target_id)
                 if user:
                     await update.message.reply_text(
@@ -105,8 +104,8 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
                     )
 
             elif action == 'awaiting_new_admin_id':
-                target_id = int(text)
-                context.args = [target_id]
+                target_id = text
+                context.user_data["target_id"] = target_id
                 user = self.db_manager.get_admin_by_user_id(target_id)
                 if user:
                     await update.message.reply_text(
@@ -121,7 +120,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
 
             elif action == 'awaiting_role_change_id':
                 target_id = int(text)
-                context.args = [target_id]
+                context.user_data["target_id"] = target_id
                 user = self.db_manager.get_admin_by_user_id(target_id)
                 if user:
                     await update.message.reply_text(

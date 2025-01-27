@@ -124,7 +124,7 @@ class UserActivity(Base):
     __tablename__ = 'user_activities'
     
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    user_id = Column(String, ForeignKey('users.telegram_id', ondelete='CASCADE'), nullable=False)
     coin_id = Column(String, ForeignKey('coins.id', ondelete='CASCADE'), nullable=False)
     activity_type = Column(String, nullable=False)  # 'search', 'price_check', 'analysis', etc.
     timestamp = Column(Integer,nullable=False)
@@ -143,10 +143,10 @@ class Admin(Base):
     
     
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    user_id = Column(String, ForeignKey('users.telegram_id', ondelete='CASCADE'),unique=True, nullable=False)
     role = Column(Enum(AdminTypes), default=AdminTypes.NORMAL, nullable=False) 
     created_at = Column(DateTime, default=datetime.utcnow)
-    created_by = Column(Integer, ForeignKey('admins.id'))
+    created_by = Column(String, ForeignKey('admins.user_id'))
     is_active = Column(Boolean, default=True)
     
     # Relationships
@@ -157,9 +157,9 @@ class AdminActivity(Base):
     __tablename__ = 'admin_activities'
     
     id = Column(Integer, primary_key=True)
-    admin_id = Column(Integer, ForeignKey('admins.id', ondelete='CASCADE'), nullable=False)
+    admin_id = Column(String, ForeignKey('admins.user_id', ondelete='CASCADE'), nullable=False)
     activity_type = Column(String, nullable=False)  # 'user_update', 'admin_add', etc.
-    target_user_id = Column(Integer, ForeignKey('users.id'))  # Affected user if any
+    target_user_id = Column(String, ForeignKey('users.telegram_id'))  # Affected user if any
     timestamp = Column(DateTime, default=datetime.utcnow)
     details = Column(JSON)  # Store activity details
     

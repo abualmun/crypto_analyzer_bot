@@ -38,7 +38,7 @@ message_handler.user_states = user_states
 async def start_command(update, context):
     user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     if not user :
-        db.create_user({'telegram_id':update.message.from_user.id})
+        db.create_user({'telegram_id':str(update.message.from_user.id)})
     formatter.set_language(user['language'])
     """Handle /start command"""
     welcome_text = (
@@ -54,13 +54,14 @@ async def start_command(update, context):
     
 
 async def admin_command(update,context):
-    # admin = db.create_admin({'user_id':update.message.from_user.id,'role':AdminTypes.MASTER,'created_by':update.message.from_user.id})
-    user = db.get_user_by_telegram_id(update.message.from_user.id)
+    # admin = db.create_admin({'user_id':str(update.message.from_user.id),'role':AdminTypes.MASTER,'created_by':str(update.message.from_user.id)})
+    user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     try:
+        print(type(user["telegram_id"]))
         admin = db.get_admin_by_user_id(user["telegram_id"])
         formatter.set_language(user['language'])
 
-        if admin:
+        if admin['is_active']:
             welcome_text = (
                     "Welcome to CryptoAnalyst Bot Admin Panel\n\n"
                     "How can I help you? "

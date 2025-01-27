@@ -334,7 +334,7 @@ class DatabaseManager:
         """Update a user's subscription type and log the change."""
         try:
             with self.session_scope() as session:
-                user = session.query(User).filter_by(id=user_id).first()
+                user = session.query(User).filter_by(telegram_id=user_id).first()
                 if not user:
                     return None
 
@@ -431,14 +431,14 @@ class DatabaseManager:
             logger.error(f"Error creating admin: {str(e)}")
             return None
 
-    def remove_admin(self, admin_id: int, removed_by: int) -> bool:
+    def remove_admin(self, admin_id: str, removed_by: str) -> bool:
         """
         Remove an admin by setting is_active to False.
         Returns True if successful, False otherwise.
         """
         try:
             with self.session_scope() as session:
-                admin = session.query(Admin).filter_by(id=admin_id, is_active=True).first()
+                admin = session.query(Admin).filter_by(user_id=admin_id, is_active=True).first()
                 if not admin:
                     logger.error(f"Active admin with ID {admin_id} not found")
                     return False
@@ -460,14 +460,14 @@ class DatabaseManager:
             logger.error(f"Error removing admin {admin_id}: {str(e)}")
             return False
  
-    def get_admin_by_user_id(self, user_id: int) -> Optional[Dict]:
+    def get_admin_by_user_id(self, user_id: str) -> Optional[Dict]:
         """Get admin info by user ID if they are an admin."""
         
         try:
             user = self.get_user_by_telegram_id(user_id)
             with self.session_scope() as session:
                 admin = session.query(Admin).filter_by(
-                    user_id=user.get('id'),
+                    user_id=user.get('telegram_id'),
                 ).first()
                 return self._clone_object(admin)
         except SQLAlchemyError as e:
@@ -557,7 +557,7 @@ class DatabaseManager:
     def update_admin_role(self,admin_id,new_role,updated_by):
         try:
             with self.session_scope() as session:
-                admin = session.query(Admin).filter_by(id=admin_id).first()
+                admin = session.query(Admin).filter_by(user_id=admin_id).first()
                 if not admin:
                     return None
 

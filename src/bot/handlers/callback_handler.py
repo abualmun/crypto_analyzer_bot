@@ -15,11 +15,11 @@ class CallbackHandler:
         self.analysis_handler = AnalysisHandler()
         self.formatter = TelegramFormatter()  # Add formatter
         self.db_manager = DatabaseManager()
-
+        self.user_states = {}
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle callback queries from inline keyboards"""
         query = update.callback_query
-        user_id = update.effective_user.id
+        user_id = str(update.effective_user.id)
         data = query.data
         
         if 'language' not in context.user_data:
@@ -35,7 +35,7 @@ class CallbackHandler:
             
             # Handle analysis callbacks
             elif data.startswith("analysis_"):
-                await self._handle_analysis_selection(query, user_id)
+                await self._handle_analysis_selection(query, context,user_id)
             
             # Handle timeframe callbacks
             elif data.startswith("timeframe_"):
@@ -43,11 +43,11 @@ class CallbackHandler:
             
             # Handle chart callbacks
             elif data.startswith("chart_"):
-                await self._handle_chart_selection(query, user_id)
+                await self._handle_chart_selection(query,context, user_id)
             
             # Handle settings callbacks
             elif data.startswith("settings_"):
-                await self._handle_settings_selection(query, user_id, context)
+                await self._handle_settings_selection(query, user_id)
             
             # Handle back buttons
             elif data.startswith("back_"):
@@ -58,11 +58,11 @@ class CallbackHandler:
             elif data.startswith("tracking_"):
                 await self._handle_tracking_selection(query, user_id)
             elif data.startswith("users_"):
-                await self._handle_users_action(query, user_id)
+                await self._handle_users_action(query, context,user_id)
             elif data.startswith("back_"):
                 await self._handle_back_button(query, user_id)
             elif data.startswith("adminsconf_"):
-                await self._handle_admins_action(query, user_id)
+                await self._handle_admins_action(query, context,user_id)
             elif data.startswith('toggle_ban'):
                 await self._handle_user_ban(query,context=context,user_id=user_id)
             elif data.startswith('change_user_subscrption'):
@@ -121,25 +121,26 @@ class CallbackHandler:
                 self.formatter._t('education_menu'),
                 reply_markup=self.keyboards.get_education_menu()
             )
-    async def _handle_analysis_selection(self, query, user_id):
+    async def _handle_analysis_selection(self, query,context, user_id):
+        user_id = str(user_id)
       # Existing method, no changes
         """Handle analysis type selections"""
         action = query.data.split("_")[1]
         
         if action == "quick":
-            self.user_states[user_id] = {"action": "quick_analysis"}
+            context.user_data["action"] = "quick_analysis"
             await query.edit_message_text(
                 self.formatter._t('provide_symbol_prompt')
             )
         
         elif action == "news":
-            self.user_states[user_id] = {"action": "news_analysis"}
+            context.user_data["action"] = "news_analysis"
             await query.edit_message_text(
                 self.formatter._t('provide_symbol_prompt')
             )
             
         elif action == "full":
-            self.user_states[user_id] = {"action": "full_analysis"}
+            context.user_data["action"] =  "full_analysis"
             await query.edit_message_text(
                 self.formatter._t('provide_symbol_prompt'),
                 reply_markup=self.keyboards.get_timeframe_selection()
@@ -165,11 +166,12 @@ class CallbackHandler:
             f"{self.formatter._t('provide_symbol_prompt')}"
         )
 
-    async def _handle_chart_selection(self, query, user_id):
+    async def _handle_chart_selection(self, query,context, user_id):
       # Existing method, no changes
         """Handle chart type selections"""
         chart_type = query.data.split("_")[1]
-        self.user_states[user_id] = {"action": "chart", "type": chart_type}
+        context.user_data["action"] = "chart"
+        context.user_data["type"] = chart_type
         
         chart_name = self.formatter._t(f'{chart_type}_chart')
         await query.edit_message_text(
@@ -315,69 +317,23 @@ class CallbackHandler:
         except Exception as e:
             await query.edit_message_text(self.formatter._t('error'))
 
-    async def _handle_users_action(self, query, user_id):
+    async def _handle_users_action(self, query,context, user_id):
         """Handle various user management actions"""
         action = query.data.split("_")[1]
         try:
             if action == "subscribe":
-                self.user_states[user_id] = {"action": "awaiting_subscription_change"}
+                context.user_data["action"] = "awaiting_subscription_change"
                 await query.edit_message_text(
                     self.formatter._t('provide_user_id_for_subscription')
                 )
             elif action == "ban":
-                self.user_states[user_id] = {"action": "awaiting_user_ban"}
+                context.user_data["action"] = "awaiting_user_ban"
                 await query.edit_message_text(
                     self.formatter._t('provide_user_id_for_ban')
                 )
         except Exception as e:
             await query.edit_message_text(self.formatter._t('error'))
 
-    async def _handle_back_button(self, query, user_id):
-        """Handle back button presses"""
-        destination = query.data.split("_")[1]
-        try:
-            if destination == "main":
-                await query.edit_message_text(
-                    self.formatter._t('main_menu'),
-                    reply_markup=self.keyboards.get_main_menu()
-                )
-            elif destination == "analysis":
-                await query.edit_message_text(
-                    self.formatter._t('select_analysis'),
-                    reply_markup=self.keyboards.get_analysis_menu()
-                )
-            elif destination == "admin":
-                await query.edit_message_text(
-                    self.formatter._t('admin_menu'),
-                    reply_markup=self.keyboards.get_admin_menu()
-                )
-        except Exception as e:
-            await query.edit_message_text(self.formatter._t('error'))
-
-    async def _handle_admins_action(self, query, user_id):
-        """Handle admin management actions"""
-        action = query.data.split("_")[1]
-        try:
-            if action == "new":
-                self.user_states[user_id] = {"action": "awaiting_new_admin_id"}
-                await query.edit_message_text(
-                    self.formatter._t('provide_new_admin_id'),
-                    reply_markup=self.keyboards.get_admin_menu()
-                )
-            elif action == "change":
-                self.user_states[user_id] = {"action": "awaiting_role_change_id"}
-                await query.edit_message_text(
-                    self.formatter._t('provide_admin_id_for_role_change'),
-                    reply_markup=self.keyboards.get_admin_menu()
-                )
-            elif action == "delete":
-                self.user_states[user_id] = {"action": "awaiting_delete_admin_id"}
-                await query.edit_message_text(
-                    self.formatter._t('provide_admin_id_for_removal'),
-                    reply_markup=self.keyboards.get_admin_menu()
-                )
-        except Exception as e:
-            await query.edit_message_text(self.formatter._t('error'))
 
     async def _get_most_searched_data(self):
         try:
@@ -394,16 +350,14 @@ class CallbackHandler:
             return await str(e)
 
  
-    async def _handle_admins_action(self, query, user_id):
+    async def _handle_admins_action(self, query,context, user_id):
         """Handle admin management actions"""
         action = query.data.split("_")[1]
         
         try:
             if action == "new":
                 # Set state to await new admin ID
-                self.user_states[user_id] = {
-                    "action": "awaiting_new_admin_id"
-                }
+                context.user_data["action"] =  "awaiting_new_admin_id"
                 await query.edit_message_text(
                     self.formatter._t('provide_new_admin_id'),
                     reply_markup=InlineKeyboardMarkup([[
@@ -416,9 +370,8 @@ class CallbackHandler:
                 
             elif action == "change":
                 # Set state to await admin ID for role change
-                self.user_states[user_id] = {
-                    "action": "awaiting_role_change_id"
-                }
+                context.user_data["action"] ="awaiting_role_change_id"
+                
                 await query.edit_message_text(
                     self.formatter._t('provide_admin_id_for_role_change'),
                     reply_markup=InlineKeyboardMarkup([[
@@ -431,10 +384,10 @@ class CallbackHandler:
                 
                 
             elif action == "delete":
+                
                 # Set state to await admin ID for deletion
-                self.user_states[user_id] = {
-                    "action": "awaiting_delete_admin_id"
-                }
+                context.user_data["action"] ="awaiting_delete_admin_id"
+                
                 await query.edit_message_text(
                     self.formatter._t('provide_admin_id_for_removal'),
                     reply_markup=InlineKeyboardMarkup([[
@@ -451,10 +404,11 @@ class CallbackHandler:
             )
 
     async def _handle_user_ban(self,query,context,user_id):
-            success = self.db_manager.update_user_type(context.args[0],new_type=UserType.BANNED)
+            target_id = context.user_data["target_id"]
+            success = self.db_manager.update_user_type(target_id,new_type=UserType.BANNED)
             if success:
                 await query.edit_message_text(
-                f"{self.formatter._t('user ')} {context.args[0]} {self.formatter._t('was banned')}",
+                f"{self.formatter._t('user ')} {target_id} {self.formatter._t('was banned')}",
                 reply_markup=self.keyboards.get_admin_menu()
                 )
             else:
@@ -463,11 +417,11 @@ class CallbackHandler:
 
     async def _handle_change_user_subscrption(self,query,context,user_id):
         subscription = query.data.split("_")[-1]
-
-        success = self.db_manager.update_user_type(context.args[0],new_type=subscription)
+        target_id = context.user_data["target_id"]
+        success = self.db_manager.update_user_type(target_id,new_type=subscription)
         if success:
                 await query.edit_message_text(
-                f"{self.formatter._t('user ')} {context.args[0]} {self.formatter._t('subscription was changed')}",
+                f"{self.formatter._t('user ')} {target_id} {self.formatter._t('subscription was changed')}",
                 reply_markup=self.keyboards.get_admin_menu()
                 )
         else:
@@ -475,7 +429,8 @@ class CallbackHandler:
             self.formatter._t('error'))
 
     async def _handle_admin_remove(self,query,context,user_id):
-            success = self.db_manager.remove_admin(admin_id=context.args[0],removed_by=user_id)
+            target_id = context.user_data["target_id"]
+            success = self.db_manager.remove_admin(admin_id=target_id,removed_by=user_id)
             if success:
                 await query.edit_message_text(
                 f"{self.formatter._t('admin ')} {context.args[0]} {self.formatter._t('was removed')}",
@@ -487,10 +442,11 @@ class CallbackHandler:
 
 
     async def _handle_admin_add(self,query,context,user_id):
-            success = self.db_manager.create_admin(context.args[0],user_id)
+            target_id = context.user_data["target_id"]
+            success = self.db_manager.create_admin(target_id,user_id)
             if success:
                 await query.edit_message_text(
-                f"{self.formatter._t('admin ')} {context.args[0]} {self.formatter._t('was added')}",
+                f"{self.formatter._t('admin ')} {target_id} {self.formatter._t('was added')}",
                 reply_markup=self.keyboards.get_admin_menu()
                 )
             else:
@@ -504,12 +460,13 @@ class CallbackHandler:
         admin = self.db_manager.get_admin_by_user_id(self.user_states['user_id'])
         if admin['role'] != 'master':
             return await query.edit_message_text(
-            "self.formatter._t('you do not have authorization to this proccess')")
+            f"{self.formatter._t('not_authorized')}")
         
-        success = self.db_manager.update_admin_role(context.args[0],new_role=role,updated_by=user_id)
+        target_id = context.user_data["target_id"]
+        success = self.db_manager.update_admin_role(target_id,new_role=role,updated_by=user_id)
         if success:
                 await query.edit_message_text(
-                f"{self.formatter._t('user ')} {context.args[0]} {self.formatter._t('subscription was changed')}",
+                f"{self.formatter._t('admin')} {target_id} {self.formatter._t('role_has_changed')}",
                 reply_markup=self.keyboards.get_admin_menu()
                 )
         else:

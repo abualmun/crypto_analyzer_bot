@@ -343,6 +343,7 @@
   "education_topic_security_scams_title": "Common Scams",
   "education_topic_security_scams_text": "Understand and learn to identify common cryptocurrency scams including phishing, fake exchanges, and pump-and-dump schemes.",
   "education_topic_security_scams_link_1_text": "Avoiding Crypto Scams",
-  "education_topic_security_scams_link_1_url": "https://www.ftc.gov/cryptocurrency"
-
+  "education_topic_security_scams_link_1_url": "https://www.ftc.gov/cryptocurrency",
+   "admin": "admin",
+    "role_has_changed" :"role has changed"
 }
