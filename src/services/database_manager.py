@@ -330,7 +330,7 @@ class DatabaseManager:
             logger.error(f"Error fetching user with telegram_id {telegram_id}: {str(e)}")
             return None
 
-    def update_user_type(self, user_id: int, new_type: UserType, admin_id: int) -> Optional[Dict]:
+    def update_user_type(self, user_id: str, new_type: UserType, admin_id: str) -> Optional[Dict]:
         """Update a user's subscription type and log the change."""
         try:
             with self.session_scope() as session:
@@ -433,19 +433,17 @@ class DatabaseManager:
 
     def remove_admin(self, admin_id: str, removed_by: str) -> bool:
         """
-        Remove an admin by setting is_active to False.
+        Permanently remove an admin record from the database.
         Returns True if successful, False otherwise.
         """
         try:
             with self.session_scope() as session:
-                admin = session.query(Admin).filter_by(user_id=admin_id, is_active=True).first()
+                admin = session.query(Admin).filter_by(user_id=admin_id).first()
                 if not admin:
                     logger.error(f"Active admin with ID {admin_id} not found")
                     return False
-                    
-                admin.is_active = False
                 
-                # Log admin removal
+                # Log admin removal before deleting the record
                 activity = AdminActivity(
                     admin_id=removed_by,
                     activity_type="admin_removed",
@@ -453,6 +451,9 @@ class DatabaseManager:
                     details={"removed_admin_id": admin_id}
                 )
                 session.add(activity)
+                
+                # Delete the admin record
+                session.delete(admin)
                 
                 session.flush()
                 return True

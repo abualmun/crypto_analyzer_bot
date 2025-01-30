@@ -74,10 +74,11 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
 
             elif action == 'awaiting_subscription_change':
                 target_id = text
+                context.user_data["target_id"] = target_id
                 user = self.db_manager.get_user_by_telegram_id(target_id)
                 if user:
                     await update.message.reply_text(
-                        f"{self.formatter._t('user_current_subscription')} {user['type']}\n"
+                        f"{self.formatter._t('user_current_subscription')} {user['user_type']}\n"
                         f"{self.formatter._t('do_you_want_to_change_it')}",
                         reply_markup=self.keyboards.get_change_user_subscrption_menu()
                     )
@@ -119,20 +120,27 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
                     )
 
             elif action == 'awaiting_role_change_id':
-                target_id = int(text)
-                context.user_data["target_id"] = target_id
-                user = self.db_manager.get_admin_by_user_id(target_id)
-                if user:
-                    await update.message.reply_text(
-                        f"{self.formatter._t('admin_current_role_is')} {user['type']}\n"
-                        f"{self.formatter._t('do_you_want_to_change_it')}",
-                        reply_markup=self.keyboards.get_change_admin_role_menu()
-                    )
+                target_id = text
+                check_admin = self.db_manager.get_admin_by_user_id(target_id)
+                if check_admin:
+                    
+                    context.user_data["target_id"] = target_id
+                    user = self.db_manager.get_admin_by_user_id(target_id)
+                    if user:
+                        await update.message.reply_text(
+                            f"{self.formatter._t('admin_current_role_is')} {check_admin['role']}\n"
+                            f"{self.formatter._t('do_you_want_to_change_it')}",
+                            reply_markup=self.keyboards.get_change_admin_role_menu()
+                        )
+                    else:
+                        await update.message.reply_text(
+                            f"{self.formatter._t('error_invalid_id')} {target_id}",
+                            reply_markup=self.keyboards.get_admin_menu()
+                        )
                 else:
                     await update.message.reply_text(
-                        f"{self.formatter._t('error_invalid_id')} {target_id}",
-                        reply_markup=self.keyboards.get_admin_menu()
-                    )
+                        self.formatter._t('error_user_not_found'))
+
 
             # Clear the state after processing
             self.user_states.pop(user_id, None)

@@ -89,6 +89,12 @@ class CallbackHandler:
     # _handle_timeframe_selection, _handle_chart_selection, _handle_settings_selection
     # _handle_back_button, _handle_help_selection.
     async def _handle_menu_selection(self, query, user_id):
+        user = self.db_manager.get_user_by_telegram_id(user_id)
+        if user["user_type"] == UserType.BANNED:
+            return await query.edit_message_text(
+            self.formatter._t('error_no_permission'))
+        
+
       # Existing method, no changes
         """Handle main menu selections"""
         action = query.data.split("_")[1]
@@ -122,8 +128,11 @@ class CallbackHandler:
                 reply_markup=self.keyboards.get_education_menu()
             )
     async def _handle_analysis_selection(self, query,context, user_id):
-        user_id = str(user_id)
-      # Existing method, no changes
+        user = self.db_manager.get_user_by_telegram_id(user_id)
+        if user["user_type"] == UserType.BANNED:
+            return await query.edit_message_text(
+            self.formatter._t('error_no_permission'))
+        
         """Handle analysis type selections"""
         action = query.data.split("_")[1]
         
@@ -153,6 +162,7 @@ class CallbackHandler:
             )
 
     async def _handle_timeframe_selection(self, query, user_id):
+        
       # Existing method, no changes
         """Handle timeframe selections"""
         timeframe = query.data.split("_")[1]
@@ -261,6 +271,11 @@ class CallbackHandler:
             )
 
     async def _handle_admin_selection(self, query, user_id):
+        
+        admin = self.db_manager.get_admin_by_user_id(user_id)
+        if not admin:
+            return await query.edit_message_text(
+                    self.formatter._t('error_no_permission'))
         """Handle admin menu selections"""
         action = query.data.split("_")[1]
         try:
@@ -294,11 +309,15 @@ class CallbackHandler:
                 )
             else:
                 await query.edit_message_text(
-                    self.formatter._t('not_authorized'),
+                    f"{self.formatter._t('not_authorized')}.",
                     reply_markup=self.keyboards.get_admin_menu()
                 )
 
     async def _handle_tracking_selection(self, query, user_id):
+        admin = self.db_manager.get_admin_by_user_id(user_id)
+        if not admin:
+            return await query.edit_message_text(
+                    self.formatter._t('error_no_permission'))
         """Handle user tracking selections"""
         action = query.data.split("_")[1]
         try:
@@ -318,6 +337,10 @@ class CallbackHandler:
             await query.edit_message_text(self.formatter._t('error'))
 
     async def _handle_users_action(self, query,context, user_id):
+        admin = self.db_manager.get_admin_by_user_id(user_id)
+        if not admin:
+            return await query.edit_message_text(
+                    self.formatter._t('error_no_permission'))
         """Handle various user management actions"""
         action = query.data.split("_")[1]
         try:
@@ -351,6 +374,10 @@ class CallbackHandler:
 
  
     async def _handle_admins_action(self, query,context, user_id):
+        admin = self.db_manager.get_admin_by_user_id(user_id)
+        if not admin:
+            return await query.edit_message_text(
+                    self.formatter._t('error_no_permission'))
         """Handle admin management actions"""
         action = query.data.split("_")[1]
         
@@ -404,75 +431,127 @@ class CallbackHandler:
             )
 
     async def _handle_user_ban(self,query,context,user_id):
-            target_id = context.user_data["target_id"]
-            success = self.db_manager.update_user_type(target_id,new_type=UserType.BANNED)
+            
+            admin = self.db_manager.get_admin_by_user_id(user_id)
+            if not admin or admin['role'] == AdminTypes.WATCHER:
+                return await query.edit_message_text(
+                        self.formatter._t('error_no_permission'))
+            target_id = str(context.user_data["target_id"])
+
+            user = self.db_manager.get_user_by_telegram_id(str(target_id))
+            if user:
+                success = self.db_manager.update_user_type(target_id,new_type=UserType.BANNED,admin_id=user_id)
+                if success:
+                    await query.edit_message_text(
+                    f"{self.formatter._t('success_user_banned')}",
+                    reply_markup=self.keyboards.get_admin_menu()
+                    )
+                else:
+                    await query.edit_message_text(
+                    self.formatter._t('error'))
+            else:
+
+                    await query.edit_message_text(
+                    self.formatter._t('error_user_not_found'))
+    async def _handle_change_user_subscrption(self,query,context,user_id):
+        admin = self.db_manager.get_admin_by_user_id(user_id)
+        if not admin or admin['role'] == AdminTypes.WATCHER:
+            return await query.edit_message_text(
+                    self.formatter._t('error_no_permission'))
+        subscription = query.data.split("_")[-1]
+        if subscription == 'premium':
+            subscription = UserType.PREMIUM
+        if subscription == 'guest':
+            subscription = UserType.GUEST
+        target_id = str(context.user_data["target_id"])
+        user = self.db_manager.get_user_by_telegram_id(target_id)
+        if user:
+            success = self.db_manager.update_user_type(target_id,new_type=subscription,admin_id=user_id)
             if success:
-                await query.edit_message_text(
-                f"{self.formatter._t('user ')} {target_id} {self.formatter._t('was banned')}",
-                reply_markup=self.keyboards.get_admin_menu()
-                )
+                    await query.edit_message_text(
+                    f"{self.formatter._t('subscription_was_changed')}",
+                    reply_markup=self.keyboards.get_admin_menu()
+                    )
             else:
                 await query.edit_message_text(
-                self.formatter._t('somthing went wrong'))
-
-    async def _handle_change_user_subscrption(self,query,context,user_id):
-        subscription = query.data.split("_")[-1]
-        target_id = context.user_data["target_id"]
-        success = self.db_manager.update_user_type(target_id,new_type=subscription)
-        if success:
-                await query.edit_message_text(
-                f"{self.formatter._t('user ')} {target_id} {self.formatter._t('subscription was changed')}",
-                reply_markup=self.keyboards.get_admin_menu()
-                )
+                self.formatter._t('error'))
         else:
             await query.edit_message_text(
-            self.formatter._t('error'))
+                    self.formatter._t('error_user_not_found'))
 
     async def _handle_admin_remove(self,query,context,user_id):
-            target_id = context.user_data["target_id"]
-            success = self.db_manager.remove_admin(admin_id=target_id,removed_by=user_id)
-            if success:
-                await query.edit_message_text(
-                f"{self.formatter._t('admin ')} {context.args[0]} {self.formatter._t('was removed')}",
-                reply_markup=self.keyboards.get_admin_menu()
-                )
+            admin = self.db_manager.get_admin_by_user_id(user_id)
+            if not admin or admin['role'] != AdminTypes.MASTER:
+                return await query.edit_message_text(
+                        self.formatter._t('error_no_permission'))
+            
+            target_id = str(context.user_data["target_id"])
+            check_admin = self.db_manager.get_admin_by_user_id(target_id)
+            if check_admin:
+                success = self.db_manager.remove_admin(admin_id=target_id,removed_by=user_id)
+                if success:
+                    await query.edit_message_text(
+                    f"{self.formatter._t('success_admin_removed')}",
+                    reply_markup=self.keyboards.get_admin_menu()
+                    )
+                else:
+                    await query.edit_message_text(
+                    self.formatter._t('error'))
             else:
-                await query.edit_message_text(
-                self.formatter._t('error'))
-
+                    await query.edit_message_text(
+                        self.formatter._t('error_user_not_found'))
 
     async def _handle_admin_add(self,query,context,user_id):
-            target_id = context.user_data["target_id"]
-            success = self.db_manager.create_admin(target_id,user_id)
-            if success:
-                await query.edit_message_text(
-                f"{self.formatter._t('admin ')} {target_id} {self.formatter._t('was added')}",
-                reply_markup=self.keyboards.get_admin_menu()
-                )
-            else:
-                await query.edit_message_text(
-                self.formatter._t('error'))
+            admin = self.db_manager.get_admin_by_user_id(user_id)
+            if not admin or admin['role'] != AdminTypes.MASTER:
+                return await query.edit_message_text(
+                        self.formatter._t('error_no_permission'))
+            
 
+            target_id = str(context.user_data["target_id"])
+            check_admin = self.db_manager.get_admin_by_user_id(target_id)
+            if check_admin:
+                success = self.db_manager.create_admin({'user_id' : target_id,"role":AdminTypes.NORMAL,"created_by":user_id})
+                if success:
+                    await query.edit_message_text(
+                    f"{self.formatter._t('success_admin_added')}",
+                    reply_markup=self.keyboards.get_admin_menu()
+                    )
+                else:
+                    await query.edit_message_text(
+                    self.formatter._t('error'))
+            else:
+                    await query.edit_message_text(
+                        self.formatter._t('error_user_not_found'))
     async def _handle_change_admin_role(self,query,context,user_id):
         role = query.data.split("_")[-1]
-        
+        if role == 'master':
+            role = AdminTypes.MASTER
+        if role == 'normal':
+            role = AdminTypes.NORMAL
+        if role == "watcher":
+            role = AdminTypes.WATCHER
         # check if the chager has authoroity to do this
-        admin = self.db_manager.get_admin_by_user_id(self.user_states['user_id'])
-        if admin['role'] != 'master':
+        admin = self.db_manager.get_admin_by_user_id(user_id)
+        if admin['role'] != AdminTypes.MASTER:
             return await query.edit_message_text(
             f"{self.formatter._t('not_authorized')}")
         
-        target_id = context.user_data["target_id"]
-        success = self.db_manager.update_admin_role(target_id,new_role=role,updated_by=user_id)
-        if success:
+        target_id = str(context.user_data["target_id"])
+        check_admin = self.db_manager.get_admin_by_user_id(target_id)
+        if check_admin:
+            success = self.db_manager.update_admin_role(target_id,new_role=role,updated_by=user_id)
+            if success:
+                    await query.edit_message_text(
+                    f"{self.formatter._t('role_has_changed')}",
+                    reply_markup=self.keyboards.get_admin_menu()
+                    )
+            else:
                 await query.edit_message_text(
-                f"{self.formatter._t('admin')} {target_id} {self.formatter._t('role_has_changed')}",
-                reply_markup=self.keyboards.get_admin_menu()
-                )
+                self.formatter._t('error'))
         else:
             await query.edit_message_text(
-            self.formatter._t('error'))
-                   
+                self.formatter._t('error_user_not_found'))          
         
             
     async def _handle_help_selection(self, query, user_id):
