@@ -38,9 +38,11 @@ message_handler.user_states = user_states
 async def start_command(update, context):
     user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     
-    if not user :
+    if not user:
         db.create_user({'telegram_id':str(update.message.from_user.id)})
         user = db.get_user_by_telegram_id(str(update.message.from_user.id))
+   
+    formatter.set_language(user['language'])
     if user["user_type"] == UserType.BANNED:
         return await update.message.reply_text(
         formatter._t('error_no_permission'))
