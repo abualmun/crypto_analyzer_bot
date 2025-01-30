@@ -187,6 +187,7 @@
     "error_invalid_id": "🔔 Invalid user ID provided",
     "error_no_permission": "⛔️ You don't have permission to perform this action",
     "error_user_not_found": "🔔 User not found",
+    "error_admin_exist": "Admin with this ID already exist.",
 
     "success_subscription_changed": "🎉 User subscription status updated successfully",
     "success_user_banned": "⚠️ User has been banned successfully",

@@ -37,14 +37,15 @@ message_handler.user_states = user_states
 
 async def start_command(update, context):
     user = db.get_user_by_telegram_id(str(update.message.from_user.id))
-    formatter.set_language(user['language'])
     
     if not user :
         db.create_user({'telegram_id':str(update.message.from_user.id)})
+        user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     if user["user_type"] == UserType.BANNED:
         return await update.message.reply_text(
         formatter._t('error_no_permission'))
-    
+    formatter.set_language(user['language'])
+
 
     
     """Handle /start command"""
@@ -61,15 +62,14 @@ async def start_command(update, context):
     
 
 async def admin_command(update,context):
-    # db.update_admin_role(str(update.message.from_user.id),AdminTypes.WATCHER,str(update.message.from_user.id))
+    # db.update_admin_role(str(update.message.from_user.id),AdminTypes.MASTER,str(update.message.from_user.id))
     # admin = db.create_admin({'user_id':str(update.message.from_user.id),'role':AdminTypes.MASTER,'created_by':str(update.message.from_user.id)})
     user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     try:
-        print(type(user["telegram_id"]))
         admin = db.get_admin_by_user_id(user["telegram_id"])
         formatter.set_language(user['language'])
 
-        if admin['is_active']:
+        if admin and admin['is_active']:
             welcome_text = (
                     "Welcome to CryptoAnalyst Bot Admin Panel\n\n"
                     "How can I help you? "

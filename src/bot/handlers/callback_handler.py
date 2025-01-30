@@ -510,7 +510,7 @@ class CallbackHandler:
 
             target_id = str(context.user_data["target_id"])
             check_admin = self.db_manager.get_admin_by_user_id(target_id)
-            if check_admin:
+            if not check_admin:
                 success = self.db_manager.create_admin({'user_id' : target_id,"role":AdminTypes.NORMAL,"created_by":user_id})
                 if success:
                     await query.edit_message_text(
@@ -522,7 +522,7 @@ class CallbackHandler:
                     self.formatter._t('error'))
             else:
                     await query.edit_message_text(
-                        self.formatter._t('error_user_not_found'))
+                        self.formatter._t('error_admin_exist'))
     async def _handle_change_admin_role(self,query,context,user_id):
         role = query.data.split("_")[-1]
         if role == 'master':

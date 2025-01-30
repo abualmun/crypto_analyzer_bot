@@ -107,7 +107,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
             elif action == 'awaiting_new_admin_id':
                 target_id = text
                 context.user_data["target_id"] = target_id
-                user = self.db_manager.get_admin_by_user_id(target_id)
+                user = self.db_manager.get_user_by_telegram_id(target_id)
                 if user:
                     await update.message.reply_text(
                         f"{self.formatter._t('proceed_with_adding_admin')} {target_id}",
