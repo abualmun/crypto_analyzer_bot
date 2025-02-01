@@ -35,14 +35,18 @@ db.init_db()
 callback_handler.user_states = user_states
 message_handler.user_states = user_states
 
+
+
+
 async def start_command(update, context):
-    user = db.get_user_by_telegram_id(str(update.message.from_user.id))
+    user = db.get_user_by_telegram_id(str(update.message.from_user.username))
     
     if not user:
-        db.create_user({'telegram_id':str(update.message.from_user.id)})
-        user = db.get_user_by_telegram_id(str(update.message.from_user.id))
+        db.create_user({'telegram_id':str(update.message.from_user.username)})
+        user = db.get_user_by_telegram_id(str(update.message.from_user.username))
    
     formatter.set_language(user['language'])
+    print(user['telegram_id'])
     if user["user_type"] == UserType.BANNED:
         return await update.message.reply_text(
         formatter._t('error_no_permission'))
@@ -61,12 +65,14 @@ async def start_command(update, context):
         formatter._t('welcome_text'),
         reply_markup=keyboards.get_main_menu()
     )  
-    
+  
 
 async def admin_command(update,context):
-    # db.update_admin_role(str(update.message.from_user.id),AdminTypes.MASTER,str(update.message.from_user.id))
-    # admin = db.create_admin({'user_id':str(update.message.from_user.id),'role':AdminTypes.MASTER,'created_by':str(update.message.from_user.id)})
-    user = db.get_user_by_telegram_id(str(update.message.from_user.id))
+    # db.update_admin_role(str(update.message.from_user.username),AdminTypes.MASTER,str(update.message.from_user.username))
+    # admin = db.create_admin({'user_id':str(update.message.from_user.username),'role':AdminTypes.MASTER,'created_by':str(update.message.from_user.username)})
+    user = db.get_user_by_telegram_id(str(update.message.from_user.username))
+    if not user:
+        db.create_user({'telegram_id':str(update.message.from_user.username)})
     try:
         admin = db.get_admin_by_user_id(user["telegram_id"])
         formatter.set_language(user['language'])
@@ -110,7 +116,7 @@ async def progress_bar(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await message.edit_text("✅ Loading Complete!")
 
 async def print_id(update,context):
-    await update.message.reply_text(update.message.from_user.id)
+    await update.message.reply_text(update.message.from_user.username)
 # Create the bot application
 # async def main():
 #     application = (
@@ -121,7 +127,21 @@ async def print_id(update,context):
 
 #     # Start the bot
 #     await application.run_polling()
+def create_first_admins():
+   
+    abualmun = db.get_admin_by_user_id("abualmun")
+    if not abualmun:
+        user = db.get_user_by_telegram_id("abualmun")
+        if not user:    
+            db.create_user({'telegram_id':"abualmun"})
+        admin = db.create_admin({'user_id':"abualmun",'role':AdminTypes.MASTER,'created_by':"abualmun"})
 
+    yahya = db.get_admin_by_user_id("hooibi")
+    if not yahya:
+        user = db.get_user_by_telegram_id("hooibi")
+        if not user:
+            db.create_user({'telegram_id':"hooibi"})
+            admin = db.create_admin({'user_id':"hooibi",'role':AdminTypes.MASTER,'created_by':"abualmun"})
 
 
 def main():
@@ -161,6 +181,12 @@ def main():
     # Start the bot
     print('Starting bot...')
     application.run_polling()
+    
+    
+    
+    # add admin then comment again
+    create_first_admins()
+   
 
 # Run the bot
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ class CallbackHandler:
     async def handle_callback(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle callback queries from inline keyboards"""
         query = update.callback_query
-        user_id = str(update.effective_user.id)
+        user_id = str(update.effective_user.username)
         data = query.data
         
         if 'language' not in context.user_data:

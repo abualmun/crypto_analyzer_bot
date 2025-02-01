@@ -128,7 +128,7 @@ class AnalysisHandler:
     )
             # log the activities in the database
             self.db_manager.log_user_activity({
-                'user_id':update.message.from_user.id,
+                'user_id':update.message.from_user.username,
                 'coin_id':coin_id,
                 'activity_type':'full',
                 'timestamp':days}) 
@@ -186,7 +186,7 @@ class AnalysisHandler:
             # log the activities in the database
 
             self.db_manager.log_user_activity({
-                'user_id':update.message.from_user.id,
+                'user_id':update.message.from_user.username,
                 'coin_id':coin_id,
                 'activity_type':'price',
                 'timestamp':1})
@@ -232,7 +232,7 @@ class AnalysisHandler:
             )
             # log the activities in the database
             self.db_manager.log_user_activity({
-                'user_id':update.message.from_user.id,
+                'user_id':update.message.from_user.username,
                 'coin_id':coin_id,
                 'activity_type':chart_type,
                 'timestamp':days})
