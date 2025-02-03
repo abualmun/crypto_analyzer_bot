@@ -18,7 +18,7 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         self.keyboards = AnalysisKeyboards()
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle text messages"""
-        user_id = str(update.effective_user.id)
+        user_id = str(update.effective_user.username)
         text = update.message.text.lower()
 
         # Set language from context

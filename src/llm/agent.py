@@ -95,13 +95,13 @@ class CryptoAnalysisAgent:
 Available Tools:
 {tools}
 
-When using tools, format your output as:
+When using tools, format your output as. Your response MUST be in this exact JSON format:
 {{
     "action": $TOOL_NAME,
     "action_input": $INPUT
 }}
 
-When providing final answers, use ONLY this format:
+When providing final answers, use ONLY this format. Your response MUST be in this exact JSON format:
 {{
     "action": "Final Answer",
     "action_input": "Your answer here"
