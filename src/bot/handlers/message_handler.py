@@ -28,16 +28,20 @@ class CustomMessageHandler:  # Renamed from MessageHandler to CustomMessageHandl
         # Get user's current state
         state = context.user_data
 
-        if not state:
+        # if not state:
             # No active state, ignore the message or provide guidance
-            context.args = [text]
-            await self.agent.process_query(update, context)
+            # context.args = [text]
+            # await self.agent.process_query(update, context)
 
         try:
             action = state.get('action')
             if action == 'quick_analysis':
                 context.args = [text]
                 await self.analysis_handler.cmd_quick(update, context)
+            
+            elif action == 'ai_analysis':
+                context.args = [text]
+                await self.agent.process_query(update, context)
 
             elif action == 'news_analysis':
                 context.args = [text]

@@ -19,7 +19,8 @@ class AnalysisKeyboards:
             ]
             ,
             [
-                InlineKeyboardButton(text=self.formatter._t('education_button'), callback_data="menu_education")
+                InlineKeyboardButton(text=self.formatter._t('education_button'), callback_data="menu_education"),
+                InlineKeyboardButton(text=self.formatter._t('ai_button'), callback_data="menu_ai")
             ]
         ]
         return InlineKeyboardMarkup(keyboard)

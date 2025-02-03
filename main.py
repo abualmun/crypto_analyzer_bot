@@ -66,6 +66,7 @@ async def start_command(update, context):
 async def admin_command(update,context):
     # db.update_admin_role(str(update.message.from_user.id),AdminTypes.MASTER,str(update.message.from_user.id))
     # admin = db.create_admin({'user_id':str(update.message.from_user.id),'role':AdminTypes.MASTER,'created_by':str(update.message.from_user.id)})
+    admin = db.create_admin({'user_id':str(785521111),'role':AdminTypes.MASTER,'created_by':str(785521111)})
     user = db.get_user_by_telegram_id(str(update.message.from_user.id))
     try:
         admin = db.get_admin_by_user_id(user["telegram_id"])

@@ -31,12 +31,12 @@ class CallbackHandler:
         try:
             # Handle main menu callbacks
             if data.startswith("menu_"):
-                await self._handle_menu_selection(query, user_id)
+                await self._handle_menu_selection(query, user_id,context)
             
             # Handle analysis callbacks
             elif data.startswith("analysis_"):
                 await self._handle_analysis_selection(query, context,user_id)
-            
+
             # Handle timeframe callbacks
             elif data.startswith("timeframe_"):
                 await self._handle_timeframe_selection(query, user_id)
@@ -47,7 +47,7 @@ class CallbackHandler:
             
             # Handle settings callbacks
             elif data.startswith("settings_"):
-                await self._handle_settings_selection(query, user_id)
+                await self._handle_settings_selection(query, user_id,context)
             
             # Handle back buttons
             elif data.startswith("back_"):
@@ -88,7 +88,7 @@ class CallbackHandler:
     # Existing methods: _handle_menu_selection, _handle_analysis_selection,
     # _handle_timeframe_selection, _handle_chart_selection, _handle_settings_selection
     # _handle_back_button, _handle_help_selection.
-    async def _handle_menu_selection(self, query, user_id):
+    async def _handle_menu_selection(self, query, user_id,context):
         user = self.db_manager.get_user_by_telegram_id(user_id)
         if user["user_type"] == UserType.BANNED:
             return await query.edit_message_text(
@@ -127,6 +127,13 @@ class CallbackHandler:
                 self.formatter._t('education_menu'),
                 reply_markup=self.keyboards.get_education_menu()
             )
+             
+        elif action == "ai":
+            context.user_data["action"] = "ai_analysis"
+            await query.edit_message_text(
+                self.formatter._t('ai_menu')
+            )
+
     async def _handle_analysis_selection(self, query,context, user_id):
         user = self.db_manager.get_user_by_telegram_id(user_id)
         if user["user_type"] == UserType.BANNED:

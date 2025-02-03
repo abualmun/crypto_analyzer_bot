@@ -22,7 +22,7 @@ class AnalysisHandler:
         self.analyzer = TechnicalAnalyzer()
         self.formatter = TelegramFormatter()
         self.data_processor = DataProcessor()
-        self.news_fetcher = CryptoNewsFetcher(os.getenv("CRYPTO_NEWS_TOKEN"))
+        self.news_fetcher = CryptoNewsFetcher(os.getenv("CRYPTO_NEWS_TOKEN"),os.getenv("GOOGLE_API_KEY"))
         self.news_formatter = NewsFormatter()
         self.keyboards = reply_keyboards.AnalysisKeyboards()
         self.db_manager = DatabaseManager()
@@ -55,7 +55,7 @@ class AnalysisHandler:
             # Get news articles
             news_df, success = self.news_fetcher.get_news_by_coin(
                 categories=coin_symbol,
-                limit=10,
+                limit=5,
                 lang="EN"
             )
             

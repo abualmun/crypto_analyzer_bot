@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import select
 from datetime import datetime, timedelta
@@ -84,48 +84,71 @@ class CacheManager:
             session.close()
 
     def update_ohlcv_data(
-        self,
-        coin_id: str,
-        vs_currency: str,
-        interval: str,
-        df: pd.DataFrame
-    ):
+    self,
+    coin_id: str,
+    vs_currency: str,
+    interval: str,
+    df: pd.DataFrame
+):
         """Update OHLCV data in the cache."""
         session = self.Session()
         try:
-            start_time = df.index.min()
-            end_time = df.index.max()
-            
             # First, ensure the coin exists
             coin = session.query(Coin).filter(Coin.id == coin_id).first()
             if not coin:
                 self.logger.error(f"Coin {coin_id} not found in database")
                 raise ValueError(f"Coin {coin_id} not found in database")
-
-            # Delete existing data
-            session.query(OHLC).filter(
-                OHLC.coin_id == coin_id,
-                OHLC.vs_currency == vs_currency,
-                OHLC.interval == TimeInterval(interval),
-                OHLC.timestamp.between(start_time, end_time)
-            ).delete()
-
-            # Insert new data
+    
+            # Convert interval string to TimeInterval enum
+            interval_map = {
+                '1': TimeInterval.ONE_DAY,
+                '7': TimeInterval.SEVEN_DAYS,
+                '30': TimeInterval.THIRTY_DAYS,
+                '90': TimeInterval.NINETY_DAYS
+            }
+            interval_enum = interval_map.get(str(interval))
+            if not interval_enum:
+                raise ValueError(f"Invalid interval: {interval}")
+    
+            # Instead of raw SQL, use SQLAlchemy ORM for the upsert operation
             for timestamp, row in df.iterrows():
-                entry = OHLC(
-                    coin_id=coin_id,
-                    vs_currency=vs_currency,
-                    interval=TimeInterval(interval),
-                    timestamp=timestamp,
-                    open=row['open'],
-                    high=row['high'],
-                    low=row['low'],
-                    close=row['close'],
-                    volume=row['volume'],
-                    market_cap=row['market_cap'],
-                    last_updated=datetime.utcnow()
-                )
-                session.add(entry)
+                # Replace NaN values with None
+                volume = None if pd.isna(row['volume']) else row['volume']
+                market_cap = None if pd.isna(row['market_cap']) else row['market_cap']
+                
+                # Try to find existing record
+                existing = session.query(OHLC).filter(
+                    OHLC.coin_id == coin_id,
+                    OHLC.timestamp == timestamp
+                ).first()
+                
+                if existing:
+                    # Update existing record
+                    existing.vs_currency = vs_currency
+                    existing.interval = interval_enum
+                    existing.open = row['open']
+                    existing.high = row['high']
+                    existing.low = row['low']
+                    existing.close = row['close']
+                    existing.volume = volume
+                    existing.market_cap = market_cap
+                    existing.last_updated = datetime.utcnow()
+                else:
+                    # Create new record
+                    new_record = OHLC(
+                        coin_id=coin_id,
+                        vs_currency=vs_currency,
+                        interval=interval_enum,
+                        timestamp=timestamp,
+                        open=row['open'],
+                        high=row['high'],
+                        low=row['low'],
+                        close=row['close'],
+                        volume=volume,
+                        market_cap=market_cap,
+                        last_updated=datetime.utcnow()
+                    )
+                    session.add(new_record)
             
             session.commit()
             
@@ -135,7 +158,7 @@ class CacheManager:
             raise
         finally:
             session.close()
-
+            
     def update_coin_metadata(self, coin_data: Dict):
         """Update coin metadata in the cache."""
         session = self.Session()

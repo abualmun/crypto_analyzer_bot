@@ -3,8 +3,10 @@ import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional
 
+from ..llm.sentimnet import CryptoSentimentAnalyzer
+
 class CryptoNewsFetcher:
-    def __init__(self, api_key: str):
+    def __init__(self, api_key: str, google_api_key: Optional[str] = None):
         """
         Initialize the CryptoCompare News API client.
         
@@ -13,6 +15,8 @@ class CryptoNewsFetcher:
         """
         self.api_key = api_key
         self.base_url = "https://data-api.cryptocompare.com/news/v1/article"
+        if google_api_key:
+            self.sentiment_analyzer = CryptoSentimentAnalyzer(google_api_key)
     
     def _safe_timestamp_to_datetime(self, timestamp) -> Optional[datetime]:
         """
@@ -109,8 +113,12 @@ class CryptoNewsFetcher:
             if not articles:
                 print("No valid articles found after processing")
                 return pd.DataFrame(), False
+            articles = pd.DataFrame(articles)
             
-            return pd.DataFrame(articles), True
+            if self.sentiment_analyzer:
+                articles = self.sentiment_analyzer.batch_analyze_articles(pd.DataFrame(articles))
+            
+            return articles, True
             
         except Exception as e:
             print(f"Error fetching news: {str(e)}")

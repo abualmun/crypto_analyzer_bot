@@ -1,3 +1,12 @@
+from langchain.agents.structured_chat.base import create_structured_chat_agent
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.tools import StructuredTool
+from langchain.agents import AgentExecutor
+from src.data.cc_news import CryptoNewsFetcher
+from src.data.processor import DataProcessor
+from src.utils.news_formatters import NewsFormatter
+from src.utils.formatters import TelegramFormatter
+from src.analysis.technical import TechnicalAnalyzer
 import asyncio
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import initialize_agent, Tool
@@ -12,21 +21,25 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 from src.services.database_manager import DatabaseManager
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-from src.analysis.technical import TechnicalAnalyzer
-from src.utils.formatters import TelegramFormatter
-from src.utils.news_formatters import NewsFormatter
-from src.data.processor import DataProcessor
-from src.data.cc_news import CryptoNewsFetcher
+sys.path.append(os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..')))
+
+
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.agents import AgentExecutor
+from langchain.tools import StructuredTool
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain.agents.structured_chat.base import create_structured_chat_agent
+from langchain.schema import HumanMessage, SystemMessage
+from typing import Dict, Optional
+from dotenv import load_dotenv
+import sys
+import os
 
 class CryptoAnalysisAgent:
     def __init__(self, google_api_key: str = None):
-        """
-        Initialize the Crypto Analysis Agent.
-        
-        Args:
-            google_api_key (str, optional): Google API key. If not provided, will try to get from environment.
-        """
+        """Initialize the Crypto Analysis Agent."""
+        # Initialize all your existing components
         self.analyzer = TechnicalAnalyzer()
         self.formatter = TelegramFormatter()
         self.data_processor = DataProcessor()
@@ -40,7 +53,8 @@ class CryptoAnalysisAgent:
             '1m': 30,
             '3m': 90
         }
-        # Load API key
+
+        # Initialize LLM
         if google_api_key:
             self.api_key = google_api_key
         else:
@@ -48,190 +62,214 @@ class CryptoAnalysisAgent:
             self.api_key = os.getenv("GOOGLE_API_KEY")
             
         if not self.api_key:
-            raise ValueError("Google API key is required. Either pass it to the constructor or set GOOGLE_API_KEY environment variable.")
+            raise ValueError("Google API key is required.")
 
-        # Initialize Gemini model
         try:
-            self.llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", google_api_key=self.api_key)
-            print("Using Gemini 1.5")
+            self.llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash-exp", google_api_key=self.api_key)
         except Exception as e:
             print(f"Gemini 1.5 not available: {e}")
             self.llm = ChatGoogleGenerativeAI(model="gemini-pro", google_api_key=self.api_key)
-            print("Falling back to Gemini Pro")
 
-        # Initialize tools
+        # Define tools with improved structure
         self.tools = [
-            Tool(
+            StructuredTool.from_function(
                 name="QuickAnalysis",
                 func=self._quick_analysis,
-                description="Useful for technical analysis of cryptocurrencies. Input should include coin symbol as first parameter and timeframe as second parameter (options: 1d, 1w, 1m, 3m). the Input should be (coin_symbol timeframe)"
+                description="Performs technical analysis of cryptocurrencies. Input format: {'coin': 'string', 'timeframe': 'string'}. coin example: bitcoin, ethereum. Valid timeframes: 1d, 1w, 1m, 3m"
             ),
-            Tool(
+            StructuredTool.from_function(
                 name="NewsAnalysis",
                 func=self._news_analysis,
-                description="Useful for analyzing news and sentiment about cryptocurrencies. Input should include coin symbol."
+                description="Analyzes news and sentiment about cryptocurrencies. Input format: {'coin': 'string'} coin example: bitcoin, ethereum."
             ),
-            Tool(
-              name="ExplainIndicator",
-              func=self._explain_indicator,
-              description="Learn about a technical indicator. Input the indicator name."
+            StructuredTool.from_function(
+                name="ExplainIndicator",
+                func=self._explain_indicator,
+                description="Explains technical indicators. Input format: {'indicator': 'string'}"
             )
         ]
-        
-        # Initialize the agent
-        self.agent = initialize_agent(
-            self.tools,
-            self.llm,
-            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
-            verbose=True
+
+        # Create structured chat prompt with improved system message and output format
+        system_template = """You are a cryptocurrency expert who provides data-based responses. The language of your response MUST EXACTLY MATCH the language of the user's input message - this is CRITICAL.
+
+Available Tools:
+{tools}
+
+When using tools, format your output as:
+{{
+    "action": $TOOL_NAME,
+    "action_input": $INPUT
+}}
+
+When providing final answers, use ONLY this format:
+{{
+    "action": "Final Answer",
+    "action_input": "Your answer here"
+}}
+
+Valid actions: "Final Answer" or {tool_names}
+
+CRITICAL LANGUAGE RULE:
+- You MUST RESPOND IN THE EXACT SAME LANGUAGE AS THE INPUT MESSAGE
+- Example: If user asks in Arabic, respond in Arabic
+- Example: If user asks in English, respond in English
+
+QUERY TYPE IDENTIFICATION:
+
+1. PRICE CHECK QUERIES:
+   When user asks questions like:
+   - "What's the current price of Bitcoin?"
+   - "ما هو سعر البيتكوين الحالي؟"
+   - "¿Cuál es el precio actual de Bitcoin?"
+   
+   DO THIS:
+   1. Use QuickAnalysis tool to get current data
+   2. Extract ONLY the current price
+   3. Respond with ONLY the price in a simple sentence
+   4. DO NOT provide analysis, signals, or other information
+   
+   Example Response Format:
+   - English: "Bitcoin's current price is $52,340."
+   - Arabic: "سعر البيتكوين الحالي هو 52,340 دولار."
+   - Spanish: "El precio actual de Bitcoin es $52,340."
+
+2. ANALYSIS REQUESTS:
+   When user explicitly asks for analysis/opinion/trends, then provide full analysis:
+
+   A. POSITION STATEMENT:
+      Start with "I am [BULLISH/BEARISH] on [COIN] because..."
+
+   B. KEY SIGNALS (Minimum 3):
+      - List strongest signals with numbers
+      - Explain signal importance
+
+   C. ENTRY/EXIT LEVELS:
+      - Entry price range
+      - Stop-loss level
+      - Take-profit targets
+      - Risk/reward ratio
+
+   D. TIMEFRAME & RISK ASSESSMENT:
+      - Expected timeframe
+      - Invalidation points
+
+CRITICAL RULES:
+1. For price questions: ONLY give current price, nothing else
+2. For analysis requests: Provide full structured analysis
+3. ALWAYS match input language exactly
+4. ALWAYS use tools to get real data
+5. NEVER provide analysis unless specifically requested
+
+Remember: 
+- Simple price questions = Simple price answers
+- Analysis only when explicitly requested
+- Final answer MUST match input language exactly"""
+        human_template = """{input}
+{agent_scratchpad}"""
+
+        self.prompt = ChatPromptTemplate.from_messages([
+            ("system", system_template),
+            # MessagesPlaceholder(variable_name="chat_history", optional=True),
+            ("human", human_template),
+        ])
+
+        # Initialize structured chat agent
+        agent = create_structured_chat_agent(
+            llm=self.llm,
+            tools=self.tools,
+            prompt=self.prompt
         )
 
-    def _quick_analysis(self, query: str) -> str:
-        '''Perform a quick analysis of a cryptocurrency based on the given timeframe.'''
-        coin_id, timeframe = query.split(" ", 1)
-        print(f"coin_id: {coin_id}, timeframe: {timeframe}")
+        # Create agent executor
+        self.agent_executor = AgentExecutor(
+            agent=agent,
+            tools=self.tools,
+            verbose=True,
+            handle_parsing_errors=True,
+            max_iterations=5
+        )
+
+    def _format_analysis_response(self, analysis_text: str) -> str:
+        """Format the analysis response to ensure it's a simple string."""
+        return f"""ANALYSIS SUMMARY:
+{analysis_text}
+
+Note: This analysis is for informational purposes only and does not constitute financial advice."""
+
+    def _quick_analysis(self, coin: str, timeframe: str) -> str:
+        """Perform technical analysis with structured input."""
         if timeframe not in self.timeframes:
-           return self.formatter._t('invalid_timeframe_prompt')
+            return self.formatter._t('invalid_timeframe_prompt')
 
         try:
-            # Validate coin
-            if not self.data_processor.validate_coin_id(coin_id):
-               return f"❌ {self.formatter._t('invalid_symbol_prompt')}: {coin_id}"
+            if not self.data_processor.validate_coin_id(coin):
+                return f"❌ {self.formatter._t('invalid_symbol_prompt')}: {coin}"
 
-            # Get analysis
             days = self.timeframes[timeframe]
-            analysis = self.analyzer.analyze_coin(coin_id, days=days)
-            #  self.db_manager.log_user_activity({
-            #     'user_id':user_id,
-            #     'coin_id':coin_id,
-            #     'activity_type':'full',
-            #     'timestamp':days})             
-            # Send text analysis
-            # formatted_message = self.formatter.format_full_analysis(analysis, coin_id)
-            print(f"formatted_message: {analysis}")
-            # This is a placeholder - implement your actual analysis here
-            analysis_prompt = self.formatter._t('analysis_prompt').format(
-               coin_id=coin_id,
-               timeframe=timeframe,
-               analysis=analysis
-            ) 
+            analysis = self.analyzer.analyze_coin(coin, days=days)
+            
+            analysis_prompt = f"""Based on the technical analysis for {coin} over {timeframe}:
+{analysis}
+
+Provide a concise analysis including:
+1. Current trend direction
+2. Key support/resistance levels
+3. Trading signals
+4. Price targets
+5. Risk levels"""
+
             response = self.llm.invoke([HumanMessage(content=analysis_prompt)])
-            return response.content
+            return self._format_analysis_response(response.content)
 
         except Exception as e:
-            print(str(e))
-            return(self.formatter._t('analysis_error').format(error=str(e)))
-        
-    
+            return self.formatter._t('analysis_error').format(error=str(e))
 
-    def _news_analysis(self, query: str) -> str:
-        # Get news articles
+    def _news_analysis(self, coin: str) -> str:
+        """Analyze news with structured input."""
         news_df, success = self.news_fetcher.get_news_by_coin(
-            categories=query,
+            categories=coin,
             limit=10,
             lang="EN"
         )
         
         if not success or news_df.empty:
-            formatted_message= self.formatter._t('no_news_found').format(symbol=query)
-        # Get formatted message
-        formatted_message = self.news_formatter.format_news(news_df, query)
-        # This is a placeholder - implement your actual analysis here
-        news_prompt = self.formatter._t('news_analysis_prompt').format(
-           query=query,
-           news=formatted_message)
+            return self.formatter._t('no_news_found').format(symbol=coin)
+
+        formatted_news = self.news_formatter.format_news(news_df, coin)
+        news_prompt = f"""Analyze the following news for {coin}:
+{formatted_news}
+
+Provide a concise summary of:
+1. Market sentiment
+2. Key events
+3. Potential price impact
+4. Risks and opportunities"""
+
         response = self.llm.invoke([HumanMessage(content=news_prompt)])
-        return response.content
-    
-    def _explain_indicator(self, query: str) -> str:
-        """
-        Explain a technical indicator based on user input.
+        return self._format_analysis_response(response.content)
 
-        Args:
-            query (str): Name of the technical indicator.
+    def _explain_indicator(self, indicator: str) -> str:
+        """Explain technical indicators with structured input."""
+        indicator_prompt = f"""Explain {indicator} clearly and concisely:
+1. Purpose
+2. Key signals
+3. Trading applications
+4. Common pitfalls"""
 
-        Returns:
-            str: Explanation of the indicator retrieved from the LLM.
-        """
-        indicator_name = query.strip()
-
-        # If no external source, use a generic prompt
-        indicator_prompt = self.formatter._t('indicator_explanation_prompt').format(
-           indicator=indicator_name
-       )
         response = self.llm.invoke([HumanMessage(content=indicator_prompt)])
-        return response.content
+        return self._format_analysis_response(response.content)
 
     async def process_query(self, update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-        """
-        Process a user query from Telegram and send the response.
-
-        Args:
-            update (Update): The incoming update from Telegram
-            context (ContextTypes.DEFAULT_TYPE): The context object for this update
-
-        Returns:
-            None: Responses are sent directly via Telegram
-
-        Raises:
-            ValueError: If the query couldn't be processed
-            Exception: For other unexpected errors
-        """
-        # Set language from context
-        # self.formatter.set_language(context.user_data['language'])
-
-        # Get the message text
+        """Process Telegram queries."""
         text = context.args[0]
-
-        # Show loading message
         loading_message = await update.message.reply_text(
             self.formatter.format_loading_message()
         )
 
         try:
-            # Process the query
-            result = await asyncio.to_thread(self.agent.invoke, text)
-
-            # Send the response
+            result = await asyncio.to_thread(self.agent_executor.invoke, {"input": text})
             await loading_message.edit_text(result['output'])
-
-        except ValueError as e:
-            if "Could not parse LLM output" in str(e):
-                await loading_message.edit_text(
-                    self.formatter._t('query_parse_error')
-                )
-            else:
-                await loading_message.edit_text(
-                    str(e)
-                )
         except Exception as e:
             await loading_message.edit_text(
                 self.formatter._t('query_error').format(error=str(e))
             )
-
-def main():
-    """Example usage of the CryptoAnalysisAgent"""
-    
-    # Initialize the agent
-    agent = CryptoAnalysisAgent()
-    
-    # Interactive loop
-    print("Crypto Analysis Agent (type 'exit' to quit)")
-    print("Example queries:")
-    print("- Analyze BTC price for the next hour")
-    print("- What's the latest news about ETH?")
-    print("- Can you explain what RSI means?")
-    
-    while True:
-        user_input = input("\nEnter your query: ")
-        if user_input.lower() == 'exit':
-            break
-            
-        try:
-            result = agent.process_query(user_input)
-            print(f"\nResponse: {result}")
-        except Exception as e:
-            print(f"\nError: {str(e)}")
-
-if __name__ == "__main__":
-    main()

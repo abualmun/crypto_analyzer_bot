@@ -1,5 +1,5 @@
 {
-    "welcome_text":"Welcome to CryptoAnalyst Bot! 🚀\n\nI can help you analyze cryptocurrencies with technical analysis and charts. Select an option below to get started:\nOr enter your text and let the agent help you out 🤖!",
+    "welcome_text":"Welcome to CryptoAnalyst Bot! 🚀\n\nI can help you analyze cryptocurrencies with technical analysis and charts. Select an option below to get started:",
     "error_analysis": "🚫 Analysis Error",
     "analysis_for": "🔍 Analysis for",
     "analyzing": "⏳ Analyzing cryptocurrency data...",
@@ -223,6 +223,9 @@
 
   
   "education_button": "📚 Education",
+  "ai_button": "🤖 AI Agent",
+  "ai_menu": "Enter your text and let the agent help you out 🤖!",
+
 
   "news_analysis_button": "📰 News Analysis",
    "help_intro_button": "ℹ️ Introduction",
