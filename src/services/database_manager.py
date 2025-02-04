@@ -466,11 +466,15 @@ class DatabaseManager:
         
         try:
             user = self.get_user_by_telegram_id(user_id)
-            with self.session_scope() as session:
-                admin = session.query(Admin).filter_by(
-                    user_id=user.get('telegram_id'),
-                ).first()
-                return self._clone_object(admin)
+            if user:
+                with self.session_scope() as session:
+                    admin = session.query(Admin).filter_by(
+                        user_id=user.get('telegram_id'),
+                    ).first()
+                    return self._clone_object(admin)
+            else:
+                logger.error(f"Error fetching admin for user {user_id}")
+                return None    
         except SQLAlchemyError as e:
             logger.error(f"Error fetching admin for user {user_id}: {str(e)}")
             return None

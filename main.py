@@ -68,9 +68,10 @@ async def start_command(update, context):
   
 
 async def admin_command(update,context):
+    create_first_admins(["abualmun","osmanoor2018","hooibi"])
+
     # db.update_admin_role(str(update.message.from_user.username),AdminTypes.MASTER,str(update.message.from_user.username))
-    # admin = db.create_admin({'user_id':str(update.message.from_user.username),'role':AdminTypes.MASTER,'created_by':str(update.message.from_user.username)})
-    admin = db.create_admin({'user_id':'osmanoor2018','role':AdminTypes.MASTER,'created_by':'osmanoor2018'})
+    
     user = db.get_user_by_telegram_id(str(update.message.from_user.username))
     if not user:
         db.create_user({'telegram_id':str(update.message.from_user.username)})
@@ -128,21 +129,14 @@ async def print_id(update,context):
 
 #     # Start the bot
 #     await application.run_polling()
-def create_first_admins():
-   
-    abualmun = db.get_admin_by_user_id("abualmun")
-    if not abualmun:
-        user = db.get_user_by_telegram_id("abualmun")
-        if not user:    
-            db.create_user({'telegram_id':"abualmun"})
-        admin = db.create_admin({'user_id':"abualmun",'role':AdminTypes.MASTER,'created_by':"abualmun"})
-
-    yahya = db.get_admin_by_user_id("hooibi")
-    if not yahya:
-        user = db.get_user_by_telegram_id("hooibi")
-        if not user:
-            db.create_user({'telegram_id':"hooibi"})
-            admin = db.create_admin({'user_id':"hooibi",'role':AdminTypes.MASTER,'created_by':"abualmun"})
+def create_first_admins(admins):
+    for admin_name in admins:
+        new_admin = db.get_admin_by_user_id(admin_name)
+        if not new_admin:
+            user = db.get_user_by_telegram_id(admin_name)
+            if not user:    
+                db.create_user({'telegram_id':admin_name})
+            new_admin = db.create_admin({'user_id':admin_name,'role':AdminTypes.MASTER,'created_by':"abualmun"})
 
 
 def main():
@@ -186,8 +180,7 @@ def main():
     
     
     # add admin then comment again
-    create_first_admins()
-   
+
 
 # Run the bot
 if __name__ == "__main__":
