@@ -116,6 +116,8 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     last_active = Column(DateTime, default=datetime.utcnow)
     language = Column(String, default='en')
+    preferred_chart_type = Column(String, default='price')
+    preferred_timeframe = Column(Integer, default=30)
     
     # Relationships
     activities = relationship("UserActivity", back_populates="user", cascade="all, delete-orphan")

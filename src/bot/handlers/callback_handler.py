@@ -225,14 +225,77 @@ class CallbackHandler:
         elif setting == "timeframe":
             await query.edit_message_text(
                 self.formatter._t('select_timeframe'),
-                reply_markup=self.keyboards.get_timeframe_selection()
+                reply_markup=self.keyboards.get_change_timeframe_selection()
             )
         elif setting == "chart":
             await query.edit_message_text(
                 self.formatter._t('select_chart_type'),
-                reply_markup=self.keyboards.get_chart_types()
+                reply_markup=self.keyboards.get_change_chart_types()
             )
 
+        elif setting == "change":
+            change_message = query.data
+            if change_message == "settings_change_timeframe_1d":
+                self.db_manager.update_user_timeframe(user_id,1)
+                
+                return await query.edit_message_text(
+                    self.formatter._t('main_menu'),
+                    reply_markup=self.keyboards.get_main_menu()
+                )
+            if change_message =="settings_change_timeframe_1w":
+                self.db_manager.update_user_timeframe(user_id,7)
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+            if change_message =="settings_change_timeframe_1m":
+                self.db_manager.update_user_timeframe(user_id,30)
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+            if change_message =="settings_change_timeframe_3m":
+                self.db_manager.update_user_timeframe(user_id,90)
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+
+            if change_message == "settings_change_chart_price":
+                self.db_manager.update_user_chart_type(user_id,'price')
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+            if change_message == "settings_change_chart_ma":
+                self.db_manager.update_user_chart_type(user_id,'ma')
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+            if change_message == "settings_change_chart_macd":
+                self.db_manager.update_user_chart_type(user_id,'macd')
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+            if change_message == "settings_change_chart_rsi":
+                self.db_manager.update_user_chart_type(user_id,'rsi')
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )
+            if change_message == "settings_change_chart_volume":
+                self.db_manager.update_user_chart_type(user_id,'volume')
+                return await query.edit_message_text(
+                self.formatter._t('main_menu'),
+                reply_markup=self.keyboards.get_main_menu()
+            )            
+            
+            
+            
+                        
+            
     async def _handle_back_button(self, query, user_id):
         """Handle back button presses"""
         destination = query.data.split("_")[1]

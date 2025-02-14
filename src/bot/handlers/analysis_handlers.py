@@ -141,7 +141,9 @@ class AnalysisHandler:
 
     async def cmd_quick(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         self.formatter.set_language(context.user_data['language'])
-
+        user = self.db_manager.get_user_by_telegram_id(update.message.from_user.username)
+        preferred_chart_type = user["preferred_chart_type"]
+        preferred_timeframe = user["preferred_timeframe"]
         """Handler for /quick command"""
         if not context.args:
             await update.message.reply_text(
@@ -179,8 +181,8 @@ class AnalysisHandler:
             await self._generate_and_send_chart(
         update= update, 
         coin_id=coin_id, 
-        chart_type = 'price',
-        days=1, 
+        chart_type = preferred_chart_type,
+        days= preferred_timeframe, 
         loading_message=update.message,
         intro_text=formatted_message
     )

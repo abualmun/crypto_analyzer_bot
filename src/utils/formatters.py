@@ -258,9 +258,8 @@ class TelegramFormatter:
 
     def _format_summary(self, summary: Dict) -> str:
         """Format final summary"""
-        signals = summary.get('signals', [])
+        signals = summary.get('key_signals')
         confidence = summary.get('confidence', 0)
-        
         summary_text = [
             f"📝 {self._t('summary')}",
             f"{'─' * 32}",

@@ -48,6 +48,18 @@ class AnalysisKeyboards:
             [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_analysis")]
         ]
         return InlineKeyboardMarkup(keyboard)
+    def get_change_timeframe_selection(self):
+        """Create timeframe selection keyboard"""
+        keyboard = [
+            [
+                InlineKeyboardButton(text=self.formatter._t('time_1d'), callback_data="settings_change_timeframe_1d"),
+                InlineKeyboardButton(text=self.formatter._t('time_1w'), callback_data="settings_change_timeframe_1w"),
+                InlineKeyboardButton(text=self.formatter._t('time_1m'), callback_data="settings_change_timeframe_1m"),
+                InlineKeyboardButton(text=self.formatter._t('time_3m'), callback_data="settings_change_timeframe_3m")
+            ],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
 
     def get_chart_types(self):
         """Create chart type selection keyboard"""
@@ -58,6 +70,17 @@ class AnalysisKeyboards:
             [InlineKeyboardButton(text=self.formatter._t('rsi'), callback_data="chart_rsi")],
             [InlineKeyboardButton(text=self.formatter._t('volume_chart'), callback_data="chart_volume")],
             [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_analysis")]
+        ]
+        return InlineKeyboardMarkup(keyboard)
+    def get_change_chart_types(self):
+        """Create chart type selection keyboard"""
+        keyboard = [
+            [InlineKeyboardButton(text=self.formatter._t('price_chart'), callback_data="settings_change_chart_price")],
+            [InlineKeyboardButton(text=self.formatter._t('moving_averages'), callback_data="settings_change_chart_ma")],
+            [InlineKeyboardButton(text=self.formatter._t('macd'), callback_data="settings_change_chart_macd")],
+            [InlineKeyboardButton(text=self.formatter._t('rsi'), callback_data="settings_change_chart_rsi")],
+            [InlineKeyboardButton(text=self.formatter._t('volume_chart'), callback_data="settings_change_chart_volume")],
+            [InlineKeyboardButton(text=self.formatter._t('back_button'), callback_data="back_main")]
         ]
         return InlineKeyboardMarkup(keyboard)
 

@@ -358,6 +358,7 @@ class DatabaseManager:
         except SQLAlchemyError as e:
             logger.error(f"Error updating user type for user {user_id}: {str(e)}")
             return None
+        
 
     def update_user_language(self, user_id: int, new_lang: String) -> bool:
         """Update user's language."""
@@ -373,6 +374,36 @@ class DatabaseManager:
                 return True
         except SQLAlchemyError as e:
             logger.error(f"Error updating user language {user_id}: {str(e)}")
+            return False
+    def update_user_chart_type(self, user_id: int, new_preferred_chart_type: String) -> bool:
+        """Update user's chart type."""
+        try:
+            with self.session_scope() as session:
+                user = session.query(User).filter_by(telegram_id=user_id).first()
+                if not user:
+                    return False
+
+                user.preferred_chart_type = new_preferred_chart_type
+
+                session.flush()
+                return True
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating user preferred chart type {user_id}: {str(e)}")
+            return False
+    def update_user_timeframe(self, user_id: int, new_preferred_timeframe: int) -> bool:
+        """Update user's chart type."""
+        try:
+            with self.session_scope() as session:
+                user = session.query(User).filter_by(telegram_id=user_id).first()
+                if not user:
+                    return False
+
+                user.preferred_timeframe = new_preferred_timeframe
+
+                session.flush()
+                return True
+        except SQLAlchemyError as e:
+            logger.error(f"Error updating user preferred chart type {user_id}: {str(e)}")
             return False
 
     def log_user_activity(self, activity_data: Dict) -> Optional[Dict]:

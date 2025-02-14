@@ -1,7 +1,7 @@
 {
   "error_analysis": "خطأ في التحليل",
   "analysis_for": "تحليل لـ",
-  "analyzing": "جارٍ تحليل بيانات العملات المشفرة",
+  "analyzing": "جارٍ تحليل البيانات..",
   "error": "خطأ",
   "loading": "جارٍ التحميل، يرجى الانتظار...",
   "current_price": "السعر الحالي",
@@ -239,10 +239,10 @@
   "education_topic_defi_nfts_nft_link_1_text": "دليل NFT",
   "education_topic_defi_nfts_nft_link_1_url": "https://ethereum.org/en/nft/",
 
-  "education_topic_security_title": "نظرة عامة على الأمن",
-  "education_topic_security_text": "الأمن أمر بالغ الأهمية في العملات المشفرة. تعلم كيفية حماية أصولك وتجنب عمليات الاحتيال الشائعة.",
-  "education_topic_security_link_1_text": "دليل أمن العملات المشفرة",
-  "education_topic_security_link_1_url": "https://www.blockchain.com/learning-portal/bitcoin-security",
+  "education_topic_security_security_title": "نظرة عامة على الأمن",
+  "education_topic_security_security_text": "الأمن أمر بالغ الأهمية في العملات المشفرة. تعلم كيفية حماية أصولك وتجنب عمليات الاحتيال الشائعة.",
+  "education_topic_security_security_link_1_text": "دليل أمن العملات المشفرة",
+  "education_topic_security_security_link_1_url": "https://www.blockchain.com/learning-portal/bitcoin-security",
 
   "education_topic_security_wallets_title": "أمن المحافظ",
   "education_topic_security_wallets_text": "تعلم كيفية تأمين محفظة عملاتك المشفرة مع أفضل ممارسات إدارة المفاتيح الخاصة وإجراءات النسخ الاحتياطي.",
