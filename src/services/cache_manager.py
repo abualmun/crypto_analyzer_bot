@@ -98,7 +98,7 @@ class CacheManager:
             if not coin:
                 self.logger.error(f"Coin {coin_id} not found in database")
                 raise ValueError(f"Coin {coin_id} not found in database")
-    
+            
             # Convert interval string to TimeInterval enum
             interval_map = {
                 '1': TimeInterval.ONE_DAY,

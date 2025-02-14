@@ -380,7 +380,7 @@ class DatabaseManager:
         try:
             with self.session_scope() as session:
                 user = self.get_user_by_telegram_id(activity_data.get('user_id'))
-                activity_data['user_id'] = user.get('id')
+                activity_data['user_id'] = user.get('telegram_id')
                 activity = UserActivity(**activity_data)
                 session.add(activity)
                 session.flush()

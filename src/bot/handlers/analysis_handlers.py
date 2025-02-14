@@ -159,6 +159,7 @@ class AnalysisHandler:
 
         try:
             # Validate coin
+
             if not self.data_processor.validate_coin_id(coin_id):
                 await loading_message.edit_text(
                      f"❌ {self.formatter._t('invalid_symbol')}: {coin_id}\n"
@@ -222,6 +223,12 @@ class AnalysisHandler:
         )
 
         try:
+            if not self.data_processor.validate_coin_id(coin_id):
+                await loading_message.edit_text(
+                    f"❌ {self.formatter._t('invalid_symbol')}: {coin_id}\n"
+                    f"{self.formatter._t('provide_symbol_prompt')}"
+                )
+                return
             days = self.timeframes[timeframe]
             await self._generate_and_send_chart(
                 update, 

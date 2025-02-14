@@ -194,6 +194,7 @@ class DataProcessor:
             return False
 
     def get_available_coins(self) -> List[Dict]:
+        print("trying to get coins")
         """Get list of available coins, updating cache if needed."""
         try:
             cached_coins = self.cache_manager.get_all_coins()
