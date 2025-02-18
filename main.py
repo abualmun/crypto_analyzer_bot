@@ -71,7 +71,7 @@ async def admin_command(update,context):
     create_first_admins(["abualmun","osmanoor2018","hooibi"])
 
     # db.update_admin_role(str(update.message.from_user.username),AdminTypes.MASTER,str(update.message.from_user.username))
-    db.sync_with_api(api)
+    # db.sync_with_api(api)
     user = db.get_user_by_telegram_id(str(update.message.from_user.username))
     if not user:
         db.create_user({'telegram_id':str(update.message.from_user.username)})
