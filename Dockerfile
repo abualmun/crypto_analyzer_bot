@@ -2,13 +2,15 @@ FROM python:3.10-slim-bullseye
 
 WORKDIR /app
 
-# Install build dependencies and Playwright system dependencies
+# 1. Install system and build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    python3-dev \
+    gcc \
+    g++ \
     wget \
     ca-certificates \
     make \
-    # Playwright dependencies
     libnss3 \
     libnspr4 \
     libatk1.0-0 \
@@ -27,7 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpangocairo-1.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install TA-Lib
+# 2. Install TA-Lib from source
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     tar -xzf ta-lib-0.4.0-src.tar.gz && \
     cd ta-lib/ && \
@@ -37,27 +39,28 @@ RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
     cd .. && \
     rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
-# Set environment variables for TA-Lib
+# 3. Set environment variables for TA-Lib
 ENV LD_LIBRARY_PATH=/usr/lib:$LD_LIBRARY_PATH
 ENV TA_LIBRARY_PATH=/usr/lib
 ENV TA_INCLUDE_PATH=/usr/include
 
-# Install Python packages
+# 4. Install pip + core packages
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir wheel setuptools numpy==1.24.3 pandas
 
-# Install TA-Lib Python wrapper
+# 5. Install TA-Lib Python wrapper
 RUN pip install --no-cache-dir ta-lib==0.4.24
 
-# Copy and install requirements
+# 6. Copy and install other dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install Playwright browsers
-RUN playwright install --with-deps chromium && \
-    playwright install-deps
+# 7. Install Playwright (if used in your app)
+RUN pip install --no-cache-dir playwright && \
+    playwright install --with-deps chromium
 
-# Copy application code
+# 8. Copy your project
 COPY . /app/
 
+# 9. Set the entrypoint
 CMD ["python", "main.py"]
