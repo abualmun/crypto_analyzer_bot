@@ -1,6 +1,5 @@
 setuptools
 wheel
-playwright
 python-telegram-bot==20.4
 python-dotenv==1.0
 pycoingecko==3.1.0
@@ -23,7 +22,7 @@ langchain-google-genai
 langchain-core
 langchain-community
 plotly
-
+#playwright
 kaleido
 psycopg2-binary
 ta-lib
