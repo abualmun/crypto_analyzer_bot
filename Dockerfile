@@ -53,7 +53,7 @@ ENV TA_INCLUDE_PATH=/usr/include
 
 # 4. Install pip + core packages
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir wheel setuptools numpy==1.24.3 pandas
+    pip install --no-cache-dir wheel setuptools numpy==1.24.3 pandas==1.5.3
 
 # 5. Install TA-Lib Python wrapper
 RUN pip install --no-cache-dir ta-lib==0.4.24
