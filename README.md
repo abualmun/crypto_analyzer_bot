@@ -44,8 +44,6 @@ A comprehensive Telegram bot for cryptocurrency analysis, technical indicators, 
 - Telegram Bot API
 - CoinGecko API for market data
 - CryptoCompare API for news
-- Reddit API for social sentiment
-- Twitter/X API for social monitoring
 
 ### Data Visualization
 - mplfinance for candlestick charts
