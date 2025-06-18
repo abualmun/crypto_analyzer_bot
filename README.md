@@ -19,8 +19,6 @@ A comprehensive Telegram bot for cryptocurrency analysis, technical indicators, 
 
 ### News Analysis
 - Integration with CryptoCompare News API
-- Reddit crypto subreddit monitoring
-- Twitter/X cryptocurrency mentions analysis
 - Sentiment analysis for news and social media
 
 ### Educational Resources
@@ -38,7 +36,7 @@ A comprehensive Telegram bot for cryptocurrency analysis, technical indicators, 
 
 ### Backend
 - Python 3.10+
-- SQLAlchemy for database management
+- Postgres for database management
 - TA-Lib for technical analysis
 - pandas and numpy for data processing
 
