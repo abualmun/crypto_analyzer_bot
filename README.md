@@ -1,6 +1,9 @@
+
 # Crypto Analyzer Bot
 
 A comprehensive Telegram bot for cryptocurrency analysis, technical indicators, market data tracking, and educational resources. The bot provides real-time analysis, interactive charts, and multi-language support for cryptocurrency traders and enthusiasts.
+
+---
 
 ## Features
 
@@ -32,13 +35,15 @@ A comprehensive Telegram bot for cryptocurrency analysis, technical indicators, 
 - Extensible language system
 - Custom message formatting for each language
 
+---
+
 ## Technology Stack
 
 ### Backend
 - Python 3.10+
 - Postgres for database management
 - TA-Lib for technical analysis
-- pandas and numpy for data processing
+- `pandas` and `numpy` for data processing
 
 ### APIs and Services
 - Telegram Bot API
@@ -46,63 +51,115 @@ A comprehensive Telegram bot for cryptocurrency analysis, technical indicators, 
 - CryptoCompare API for news
 
 ### Data Visualization
-- mplfinance for candlestick charts
-- Plotly for interactive charts
-- datapane for report generation
+- `mplfinance` for candlestick charts
+- `Plotly` for interactive charts
+- `datapane` for report generation
 - Custom SVG generation
 
 ### Database
 - SQLite for local storage
 - Support for multiple database types through SQLAlchemy
 
+---
+
 ## Setup Instructions
 
-### Prerequisites
-1. Python 3.10 or higher
-2. pip package manager
-3. TA-Lib installation (system dependent)
+### ðŸ³ Installation with Docker (Recommended)
 
-### Installation
+This method is the easiest way to run the bot with all dependencies set up in containers.
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/crypto_analyzer_bot.git
-cd crypto_analyzer_bot
-```
+#### Steps
 
-2. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+1. **Install Docker Desktop**  
+   ðŸ‘‰ [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
 
-3. Install TA-Lib:
-- Windows: Use the provided wheel files:
-  ```bash
-  pip install TA_Lib-0.4.28-cp310-cp310-win_amd64.whl
-  ```
-- Linux/Mac:
-  ```bash
-  sudo apt-get install ta-lib  # Ubuntu/Debian
-  brew install ta-lib         # MacOS
-  ```
+2. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/crypto_analyzer_bot.git
+   cd crypto_analyzer_bot
+   ```
 
-4. Set up environment variables:
-```bash
-cp .env.example .env
-# Edit .env with your API keys and tokens
-```
+3. **Open Docker Terminal**  
+   Navigate to the project directory and build the Docker image:
+   ```bash
+   docker build -t telegram .
+   ```
 
-### API Keys Required
-- Telegram Bot Token
-- CoinGecko API Key
-- CryptoCompare API Key
-- Reddit API Credentials
-- Twitter/X API Credentials
+4. **Install the official Postgres image**  
+   From Docker Desktop, search for **postgres** and pull the image.
 
-## Usage Examples
+5. **Go to the "Images" tab in Docker Desktop**  
+   Locate the `postgres` image.
+
+6. **Run the Postgres container**
+   ```bash
+   docker run -d --name crypto_analytics_db      -e POSTGRES_USER=postgres      -e POSTGRES_PASSWORD=123123      -e POSTGRES_DB=crypto_analytics      -p 5432:5432      -v postgres_data:/var/lib/postgresql/data      postgres
+   ```
+
+7. **Run the Telegram bot container**
+   Replace the tokens with your actual API credentials:
+   ```bash
+   docker run -d --name telegram_container      --network crypto_network      -e TELEGRAM_BOT_TOKEN=replace_your_telegram_token      -e CRYPTO_NEWS_TOKEN=replace_your_crypto_news_token      -e GOOGLE_API_KEY=replace_your_google_api_key      -e POSTGRES_USER=postgres      -e POSTGRES_PASSWORD=123123      -e POSTGRES_HOST=crypto_analytics_db      -e POSTGRES_PORT=5432      -e POSTGRES_DB=crypto_analytics      -p 3000:3000 telegram
+   ```
+
+---
+
+### ðŸ§° Prerequisites (For Manual Setup)
+- Python 3.10 or higher
+- pip package manager
+- TA-Lib installation (system dependent)
+
+---
+
+### ðŸ”§ Manual Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/crypto_analyzer_bot.git
+   cd crypto_analyzer_bot
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Install TA-Lib**:
+
+   **Windows:**
+   ```bash
+   pip install TA_Lib-0.4.28-cp310-cp310-win_amd64.whl
+   ```
+
+   **Linux/Mac:**
+   ```bash
+   sudo apt-get install ta-lib       # Ubuntu/Debian
+   brew install ta-lib               # MacOS
+   ```
+
+4. **Set up environment variables**:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your API keys and tokens
+   ```
+
+---
+
+### ðŸ” API Keys Required
+
+- Telegram Bot Token  
+- CoinGecko API Key  
+- CryptoCompare API Key  
+- Reddit API Credentials  
+- Twitter/X API Credentials  
+
+---
+
+## ðŸ“¦ Usage Examples
 
 ### Basic Commands
-```python
+
+```bash
 # Start the bot
 python main.py
 
@@ -111,205 +168,162 @@ python -m pytest tests/
 ```
 
 ### Telegram Commands
-```
-/start - Start the bot and show main menu
-/analyze [symbol] - Full technical analysis
-/quick [symbol] - Quick market overview
-/chart [symbol] [type] - Generate specific chart
-/news [symbol] - Get latest news and sentiment
-```
+
+- `/start` â€” Start the bot and show main menu  
+- `/analyze [symbol]` â€” Full technical analysis  
+- `/quick [symbol]` â€” Quick market overview  
+- `/chart [symbol] [type]` â€” Generate specific chart  
+- `/news [symbol]` â€” Get latest news and sentiment  
 
 ### Analysis Examples
-```python
-# Quick analysis
+
+```bash
 /quick btc
-
-# Full analysis with timeframe
 /analyze eth 1w
-
-# Custom chart
 /chart btc macd 1d
 ```
 
-## Project Structure
+---
+
+## ðŸ“ Project Structure
+
 ```
 crypto_analyzer_bot/
-├── src/
-│   ├── analysis/         # Technical analysis modules
-│   ├── bot/             # Telegram bot handlers
-│   ├── data/            # Data fetching and processing
-│   ├── languages/       # Language files
-│   ├── services/        # API services
-│   └── utils/           # Utility functions
-├── tests/               # Test files
-├── docs/               # Documentation
-├── scripts/            # Deployment scripts
-└── main.py            # Entry point
+â”œâ”€â”€ src/
+â”‚   â”œâ”€â”€ analysis/         # Technical analysis modules
+â”‚   â”œâ”€â”€ bot/              # Telegram bot handlers
+â”‚   â”œâ”€â”€ data/             # Data fetching and processing
+â”‚   â”œâ”€â”€ languages/        # Language files
+â”‚   â”œâ”€â”€ services/         # API services
+â”‚   â””â”€â”€ utils/            # Utility functions
+â”œâ”€â”€ tests/                # Test files
+â”œâ”€â”€ docs/                 # Documentation
+â”œâ”€â”€ scripts/              # Deployment scripts
+â””â”€â”€ main.py               # Entry point
 ```
 
-## System Flow and Architecture
+---
+
+## ðŸ§  System Flow and Architecture
 
 ### Overall Architecture
+
 ```
 User (Telegram) -> Bot Handlers -> Analysis System -> Data Services -> External APIs
                                                   -> Database
                                                   -> Formatters -> User
 ```
 
-### Main Components Flow
+### Component Flows
 
-1. **User Interaction Flow**
-   ```
-   User -> Telegram Bot
-        -> Message Handler
-        -> Command Router
-        -> Specific Handler (Analysis/Chart/News)
-        -> Response Formatter
-        -> User
-   ```
+#### User Interaction Flow
 
-2. **Analysis Flow**
-   ```
-   Analysis Request -> Data Fetcher
-                   -> Technical Analyzer
-                   -> Indicator Calculator
-                   -> Pattern Recognition
-                   -> Summary Generator
-                   -> Chart Generator
-                   -> Formatted Response
-   ```
+```
+User -> Telegram Bot
+     -> Message Handler
+     -> Command Router
+     -> Specific Handler (Analysis/Chart/News)
+     -> Response Formatter
+     -> User
+```
 
-3. **Data Processing Flow**
-   ```
-   Raw Data -> Data Processor
-            -> OHLCV Converter
-            -> Technical Indicators
-            -> Pattern Detection
-            -> Support/Resistance
-            -> Market Summary
-   ```
+#### Analysis Flow
 
-4. **Chart Generation Flow**
-   ```
-   Chart Request -> Data Validator
-                -> Style Generator
-                -> Chart Type Router
-                -> Specific Chart Builder
-                -> PDF/HTML Generator
-                -> Document Sender
-   ```
+```
+Analysis Request -> Data Fetcher
+                -> Technical Analyzer
+                -> Indicator Calculator
+                -> Pattern Recognition
+                -> Summary Generator
+                -> Chart Generator
+                -> Formatted Response
+```
 
-### Detailed Component Interactions
+#### Data Processing Flow
 
-1. **Message Processing**
-   - User sends command to bot
-   - Message handler identifies command type
-   - Routes to appropriate handler
-   - Handler validates input
-   - Processes request
-   - Formats and returns response
+```
+Raw Data -> Data Processor
+         -> OHLCV Converter
+         -> Technical Indicators
+         -> Pattern Detection
+         -> Support/Resistance
+         -> Market Summary
+```
 
-2. **Technical Analysis**
-   - Fetches market data from CoinGecko
-   - Processes OHLCV data
-   - Calculates technical indicators
-   - Identifies patterns
-   - Generates comprehensive analysis
-   - Creates visualization charts
+#### Chart Generation Flow
 
-3. **News Analysis**
-   - Fetches news from multiple sources
-   - Processes text content
-   - Performs sentiment analysis
-   - Aggregates results
-   - Formats news summary
+```
+Chart Request -> Data Validator
+             -> Style Generator
+             -> Chart Type Router
+             -> Specific Chart Builder
+             -> PDF/HTML Generator
+             -> Document Sender
+```
 
-4. **Data Management**
-   - Validates incoming data
-   - Caches frequently accessed data
-   - Manages database connections
-   - Handles API rate limiting
-   - Provides data to analysis modules
+---
 
-### State Management
+## ðŸ”„ Component Interactions
 
-1. **User States**
-   - Tracks current user activity
-   - Manages analysis sessions
-   - Handles language preferences
-   - Maintains user settings
+### Message Processing
 
-2. **Cache Management**
-   - Implements data caching
-   - Manages cache invalidation
-   - Optimizes API calls
-   - Reduces response time
+- Command parsing and validation  
+- Handler routing  
+- Output formatting and delivery
 
-3. **Error Handling**
-   - Validates user input
-   - Handles API errors
-   - Manages network issues
-   - Provides user feedback
+### Technical Analysis
 
-### Language System
+- Fetch and preprocess market data  
+- Indicator calculation (MACD, RSI, etc.)  
+- Pattern recognition  
+- Chart rendering  
 
-1. **Message Flow**
-   ```
-   User Input -> Language Detector
-              -> Message Selector
-              -> Template Processor
-              -> Formatted Output
-   ```
+### News Analysis
 
-2. **Translation Process**
-   - Detects user language
-   - Loads appropriate messages
-   - Processes templates
-   - Formats response
+- News API integration  
+- Sentiment scoring  
+- Summary generation  
 
-### Security Measures
+---
 
-1. **Data Protection**
-   - API key management
-   - Rate limiting
-   - Input validation
-   - Error handling
+## ðŸ› ï¸ Data Management
 
-2. **User Protection**
-   - Command validation
-   - Input sanitization
-   - Response filtering
-   - Error messaging
+- Database schema and migrations  
+- Caching layer for performance  
+- API rate limit management  
 
-### Performance Optimization
+---
 
-1. **Data Caching**
-   - Markets data
-   - Technical analysis
-   - News content
-   - User preferences
+## ðŸ‘¥ State Management
 
-2. **Response Optimization**
-   - Async processing
-   - Batch operations
-   - Efficient querying
-   - Resource management
+- User session tracking  
+- Preference storage (e.g., language)  
+- Cache and timeout handling  
 
-### Testing Process
+---
 
-1. **Testing Flow**
-   ```
-   Code Changes -> Unit Tests
-                -> Integration Tests
-                -> System Tests
-                -> Performance Tests
-                -> Deployment
-   ```
+## ðŸ›¡ï¸ Security Measures
 
-2. **Continuous Integration**
-   - Automated testing
-   - Code quality checks
-   - Performance monitoring
-   - Deployment verification
+- Input sanitization  
+- API key protection  
+- Safe error handling  
 
-This flow documentation provides a comprehensive overview of how different components interact within the system. Each component is designed to be modular and maintainable, allowing for easy updates and extensions to the system's functionality.
+---
+
+## ðŸš€ Performance Optimization
+
+- Asynchronous processing  
+- Data caching  
+- Efficient queries and batching  
+
+---
+
+## âœ… Testing Process
+
+- Unit and integration tests  
+- Performance testing  
+- CI/CD integration for deployment
+
+---
+
+This documentation outlines the core features, installation, and architecture of the Crypto Analyzer Bot. For further contributions, issues, or enhancements, please refer to the `docs/` directory or open a GitHub issue.
